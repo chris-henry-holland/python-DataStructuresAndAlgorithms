@@ -10,7 +10,6 @@ version = "1.0.0"
 description = "Implementations of standard data structures and algorithms in Python, with example uses"
 readme = "README.md"
 authors = [{ name = "Christopher Holland", email = "chris.henry.holland@gmail.com" }]
-urls.Code = "https://github.com/chris-henry-holland/python-DataStructuresAndAlgorithms"
 license = { file = "LICENSE" }
 classifiers = [
     "License :: OSI Approved :: MIT License",
@@ -38,3 +37,6 @@ dependencies = [
     "sortedcontainers>=2.4.0",
 ]
 requires-python = ">=3.11"
+
+[project.urls]
+Repository = "https://github.com/chris-henry-holland/python-DataStructuresAndAlgorithms.git"
