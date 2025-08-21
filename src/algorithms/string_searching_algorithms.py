@@ -18,7 +18,7 @@ import itertools
 
 from collections import deque
 
-class KnuthMorrisPratt:
+class KnuthMorrisPratt(object):
     """    
     Class implementing the Knuth-Morris-Pratt string searching
     algorithm, implemented to accept any finite ordered iterable
@@ -204,7 +204,7 @@ class KnuthMorrisPratt:
                 j = lps[-1]
         return
 
-class ZAlgorithm:
+class ZAlgorithm(object):
     """    
     Class implementing the Z algorithm for string searching,
     implemented to accept any finite ordered iterable object for both
@@ -296,8 +296,11 @@ class ZAlgorithm:
         res[0] = n
         return res
         
-    def matchStartGenerator(self, s: Iterable[Any], wild: Any="$")\
-            -> Generator[Any, None, None]:
+    def matchStartGenerator(
+        self,
+        s: Iterable[Any],
+        wild: Any="$",
+    ) -> Generator[Any, None, None]:
         """
         Generator that yields each and every index in the finite
         ordered iterable object s at which a contiguous subsequence
@@ -472,7 +475,7 @@ def rollingHashWithValue(
     length: int,
     p_lst: Union[Tuple[int], List[int]]=(37, 53),
     md: int=10 ** 9 + 7,
-    encoding_func: Optional[Callable[[Any], int]]=None
+    encoding_func: Optional[Callable[[Any], int]]=None,
 ) -> Generator[Tuple[Any, Tuple[int]], None, None]:
     """
     Generator that yields the rolling hash values of each contiguous subsequence of
@@ -591,7 +594,7 @@ def rollingHashSearch(
     patterns: List[Iterable[Any]],
     p_lst: Optional[Union[List[int], Tuple[int]]]=(31, 37),
     md: int=10 ** 9 + 7,
-    check: bool=True
+    check: bool=True,
 ) -> Dict[str, List[int]]:
     """
     Performs a rolling hash search on the ordered iterable object s to
@@ -670,7 +673,7 @@ def rollingHashSearch(
 
 def findRepeatedDnaSequences(
     s: str,
-    substring_length: int=10
+    substring_length: int=10,
 ) -> List[str]:
     """
     For a string s representing a DNA sequence consisting exclusively of
@@ -747,7 +750,7 @@ def findRepeatedDnaSequences(
 
     def char2num(l: str) -> int:
         return alpha_dict[l]
-    chk = True
+    
     md = 10 ** 9 + 7
     p_lst = (31, 37)
     hsh_dict = {}
@@ -760,7 +763,7 @@ def findRepeatedDnaSequences(
         else: hsh_dict[hsh] = False
     return res
 
-class AhoCorasick:
+class AhoCorasick(object):
     """
     Data structure used for simultaneous matching of multiple
     patterns in an ordered finite iterable object consisting of
@@ -887,7 +890,7 @@ class AhoCorasick:
     
     def search(
         self,
-        s: Iterable[Hashable]
+        s: Iterable[Hashable],
     ) -> Dict[int, List[int]]:
         """
         Gives dictionary for the starting index of each occurrence
@@ -922,7 +925,7 @@ class AhoCorasick:
     
     def searchEndIndices(
         self,
-        s: Iterable[Hashable]
+        s: Iterable[Hashable],
     ) -> Generator[Tuple[int, List[int]], None, None]:
         """
         Generator yielding a 2-tuple of each index of s (in ascending order)
@@ -959,7 +962,7 @@ class AhoCorasick:
 
     def searchLengths(
         self,
-        s: Iterable[Hashable]
+        s: Iterable[Hashable],
     ) -> Generator[Tuple[int], None, None]:
         """
         Generator yielding a 2-tuple of each index of s (in ascending order)
@@ -993,7 +996,10 @@ class AhoCorasick:
             yield res
         return
     
-def wordBreak(s: str, wordDict: List[str]) -> bool:
+def wordBreak(
+    s: str,
+    wordDict: List[str],
+) -> bool:
     """
     Function identifying whether the string s can be partitioned into
     contiguous substrings such that each substring appears in
@@ -1064,7 +1070,10 @@ def wordBreak(s: str, wordDict: List[str]) -> bool:
             if arr[i]: break
     return arr[-1]
 
-def wordBreak2(s: str, wordDict: List[str]) -> List[str]:
+def wordBreak2(
+    s: str,
+    wordDict: List[str],
+) -> List[str]:
     """
     Function identifying all the ways the string s can be partitioned
     into contiguous substrings such that each substring appears in

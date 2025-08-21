@@ -1,6 +1,14 @@
 #!/usr/bin/env python
 
-from typing import Generator, Dict, List, Set, Tuple, Optional, Union
+from typing import (
+    Generator,
+    Dict,
+    List,
+    Set,
+    Tuple,
+    Optional,
+    Union,
+)
 
 import bisect
 import functools
@@ -8,11 +16,13 @@ import itertools
 import random
 import time
 
-from algorithms.misc_mathematical_algorithms import isqrt
+from src.algorithms.number_theory_algorithms import isqrt
+
+Real = Union[int, float]
 
 def largestLEpowN(
     num: Union[int, float],
-    base: int=10
+    base: int=10,
 ) -> int:
     if num <= base: return 1
     base_lst = [base]
@@ -29,7 +39,7 @@ def largestLEpowN(
         res |= 1 << i
     return res
     
-class SimplePrimeSieve:
+class SimplePrimeSieve(object):
     """
     Simple prime sieve
     """
@@ -100,7 +110,7 @@ class SimplePrimeSieve:
         n: int,
         s: int,
         d: int,
-        a: int
+        a: int,
     ) -> bool:
         x = pow(a, d, n)
         for _ in range(s):
@@ -137,7 +147,7 @@ class SimplePrimeSieve:
     def millerRabinPrimalityTestWithKnownBounds(
         self,
         n: int,
-        max_n_additional_trials_if_above_max: int=10
+        max_n_additional_trials_if_above_max: int=10,
     ) -> Tuple[bool, bool]:
         # List from https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test
         # index 0 signifies if the test shows n is a prime, index
@@ -183,7 +193,7 @@ class SimplePrimeSieve:
         extend_sieve: bool=False,
         extend_sieve_sqrt: bool=False,
         use_miller_rabin_screening: bool=False,
-        n_miller_rabin_trials: int=3
+        n_miller_rabin_trials: int=3,
     ) -> bool:
         """
         Checks if the strictly positive integer n is prime.
@@ -297,7 +307,8 @@ class SimplePrimeSieve:
         self.extendSieve(n)
         return bisect.bisect_right(self.p_lst, n)
 
-class PrimeSPFsieve:
+# Review- consider implementing as a child class of SimplePrimeSieve
+class PrimeSPFsieve(object):
     """
     Finds the smallest prime factor for each number and the number of times
     it divides the number and (if use_p_lst) generates a list of primes.
@@ -416,7 +427,11 @@ class PrimeSPFsieve:
                 sieve[i2] = (p, sieve[i][1] + 1, sieve[i][2]) if sieve[i][0] == p else (p, 1, i)
         return
     
-    def millerRabinPrimalityTest(self, n: int, n_trials: int=3) -> bool:
+    def millerRabinPrimalityTest(
+        self,
+        n: int,
+        n_trials: int=3,
+    ) -> bool:
         seen = {0}
         s = 1
         d = (n - 1) >> 1
@@ -437,10 +452,14 @@ class PrimeSPFsieve:
             if y != 1: return False
         return True
     
-    def isPrime(self, n: int, extend_sieve: bool=False,\
-            extend_sieve_sqrt: bool=False,\
-            use_miller_rabin_screening: bool=False,\
-            n_miller_rabin_trials: int=3) -> bool:
+    def isPrime(
+        self,
+        n: int,
+        extend_sieve: bool=False,
+        extend_sieve_sqrt: bool=False,
+        use_miller_rabin_screening: bool=False,
+        n_miller_rabin_trials: int=3,
+    ) -> bool:
         """
         Checks if the strictly positive integer n is prime.
         
@@ -673,7 +692,7 @@ class PrimeSPFsieve:
             n_mx *= 10
         return
     
-    def primeCountingFunction(self, n: Union[int, float]) -> int:
+    def primeCountingFunction(self, n: Real) -> int:
         """
         Gives the number of prime numbers less than or equal to a given
         number

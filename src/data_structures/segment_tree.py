@@ -1,6 +1,13 @@
 #!/usr/bin/env python
 
-from typing import Callable, Dict, List, Optional, Tuple, Union, Any
+from typing import (
+    Callable,
+    List,
+    Optional,
+    Tuple,
+    Union,
+    Any,
+)
 
 import math
 from sortedcontainers import SortedSet
@@ -91,7 +98,12 @@ class SegmentTree(object):
                 "bitwise_xor": (lambda x, y: x ^ y, 0, True),
     }
     
-    def __init__(self, start_idx: int, end_idx: int, op: Union[str, Tuple[Callable[[Any, Any], Any], Any, bool]]="sum"):
+    def __init__(
+        self,
+        start_idx: int,
+        end_idx: int,
+        op: Union[str, Tuple[Callable[[Any, Any], Any], Any, bool]]="sum"
+    ):
         self.start_idx = start_idx
         self.end_idx = end_idx
         self.size = end_idx - start_idx + 1
@@ -321,11 +333,12 @@ class SegmentTreeWithLazyPropogation(object):
     }
     
     def __init__(
-            self,
-            start_idx: int,
-            end_idx: int,
-            op: Union[str, Tuple[Callable[[Any, Any], Any]]]="sum",
-            range_update_func: Optional[Callable[[Any, Any, int], Any]]=None):
+        self,
+        start_idx: int,
+        end_idx: int,
+        op: Union[str, Tuple[Callable[[Any, Any], Any]]]="sum",
+        range_update_func: Optional[Callable[[Any, Any, int], Any]]=None,
+    ):
         self.start_idx = start_idx
         self.end_idx = end_idx
         self.size = end_idx - start_idx + 1
@@ -338,7 +351,9 @@ class SegmentTreeWithLazyPropogation(object):
         self.offset = n - self.start_idx
         self.tree = [self.op[1] for _ in range(n << 1)]
         self.lazy = [self.op[1] for _ in range(n << 1)]
-        self.range_update_func = (lambda val, delta, range_size: self.op[0](val, self._scalarMultiple(delta, range_size))) if range_update_func is None else range_update_func
+        self.range_update_func = (
+            lambda val, delta, range_size: self.op[0](val, self._scalarMultiple(delta, range_size))
+        ) if range_update_func is None else range_update_func
     
     def _scalarMultiple(self, val: Any, mult: int) -> Any:
         # Note- mult must be a non-negative integer
@@ -378,7 +393,7 @@ class SegmentTreeWithLazyPropogation(object):
         return
 
     def _resolveLazyNodes(self, node_inds: List[int]) -> None:
-        resolve_stk = []
+        
         node_ss = SortedSet(node_inds)
         idx = 0
         while idx < len(node_ss):
@@ -408,7 +423,12 @@ class SegmentTreeWithLazyPropogation(object):
         self.lazy[i] = self.op[1]
         return
 
-    def modifyRange(self, update_start_idx: int, update_end_idx: int, delta: Any) -> None:
+    def modifyRange(
+        self,
+        update_start_idx: int,
+        update_end_idx: int,
+        delta: Any,
+    ) -> None:
         l = max(update_start_idx, self.start_idx) + self.offset
         r = min(update_end_idx, self.end_idx) + self.offset + 1
         res = self.op[1] # The identity of the operation
@@ -586,7 +606,10 @@ class SegmentTreeWithLazyPropogation(object):
         return
 
         
-def lengthOfLIS(nums: List[int], k: Optional[int]=None) -> int:
+def lengthOfLIS(
+    nums: List[int],
+    k: Optional[int]=None,
+) -> int:
     """
     Finds the length of the longest strictly increasing subsequence
     of the integer sequence nums for which no two successive elements
@@ -647,7 +670,10 @@ def lengthOfLIS(nums: List[int], k: Optional[int]=None) -> int:
         st.update(num, max_prov)
     return res
 
-def minimumValueSum(nums: List[int], andValues: List[int]) -> int:
+def minimumValueSum(
+    nums: List[int],
+    andValues: List[int],
+) -> int:
     """
     Consider all the ways in which to partition the sequence of non-negative
     integers nums into exactly len(andValues) contiguous subsequences, such
@@ -776,7 +802,10 @@ def minimumValueSum(nums: List[int], andValues: List[int]) -> int:
             res = min(res, row[i - 1 - idx0] + nums[-1])
     return res if isinstance(res, int) else -1
 
-def maximumSumSubsequence(nums: List[int], queries: List[List[int]]) -> int:
+def maximumSumSubsequence(
+    nums: List[int],
+    queries: List[List[int]],
+) -> int:
     """
 
     Examples:
@@ -924,7 +953,11 @@ def maxSubarraySum(nums: List[int]) -> int:
         res = max(res, curr[0])
     return res
 
-def handleQuery(nums1: List[int], nums2: List[int], queries: List[List[int]]) -> List[int]:
+def handleQuery(
+    nums1: List[int],
+    nums2: List[int],
+    queries: List[List[int]],
+) -> List[int]:
     """
     
 

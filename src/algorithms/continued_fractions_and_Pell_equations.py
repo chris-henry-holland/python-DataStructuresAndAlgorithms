@@ -18,7 +18,7 @@ import heapq
 import itertools
 import math
 
-from algorithms.misc_mathematical_algorithms import isqrt
+from algorithms.number_theory_algorithms import isqrt
 
 def nthConvergent(
     n: int,

@@ -7,7 +7,8 @@ import math
 import random
 from sortedcontainers import SortedList
 
-from algorithms.misc_mathematical_algorithms import CustomFraction, gcd
+from algorithms.number_theory_algorithms import gcd
+from data_structures.fractions import CustomFraction
 
 def determinant(
     mat: List[List[Union[int, float]]]
@@ -46,7 +47,7 @@ def determinant(
     return recur(0)
 
 def circumcircle(
-    points: List[Tuple[Union[int, float]]]
+    points: List[Tuple[Union[int, float]]],
 ) -> Tuple[Union[Tuple[Union[int, float]], Union[int, float]]]:
     """
     For a set of between 1 and 3 points (inclusive) in the 2d plane,
@@ -97,7 +98,7 @@ def circumcircle(
     return (centre, rad_sq)
 
 def welzl(
-    points: List[Tuple[Union[int, float]]]
+    points: List[Tuple[Union[int, float]]],
 ) -> Tuple[Union[Tuple[Union[int, float]], Union[int, float]]]:
     """
     Uses the Welzl algorithm to find the centre and radius squared of
@@ -186,7 +187,7 @@ def smallestCircularEnclosure(trees: List[List[int]]) -> List[float]:
 
 def grahamScan(
     points: List[Tuple[Union[int, float]]],
-    include_border_points: bool=False
+    include_border_points: bool=False,
 ) -> List[Tuple[Union[int, float]]]:
     """
     Implementation of the Graham scan to find the convex hull of a set
@@ -324,7 +325,7 @@ def outerTrees(trees: List[List[int]]) -> List[List[int]]:
 
 def twoDimensionalLineEquationGivenTwoIntegerPoints(
     p1: Tuple[int, int],
-    p2: Tuple[int, int]
+    p2: Tuple[int, int],
 ) -> Tuple[int, int, int]:
     """
     Calculates the equation for the line in two dimensional space
@@ -507,7 +508,11 @@ def twoDimensionalLineSegmentPairCrossing(
 def BentleyOttmannAlgorithmIntegerEndpoints(
     line_segments: List[Tuple[Tuple[int, int], Tuple[int, int]]],
 ) -> Dict[Tuple[CustomFraction, CustomFraction], List[Set[Tuple[Tuple[int, int], Tuple[int, int]]]]]:
-    def gradient(p1: Tuple[int, int], p2: Tuple[int, int]) -> CustomFraction:
+    
+    def gradient(
+        p1: Tuple[int, int],
+        p2: Tuple[int, int]
+    ) -> CustomFraction:
         if p1 == p2: return 0
         diffs = [p2[i] - p1[i] for i in range(len(p1))]
         return CustomFraction(diffs[1], diffs[0])
@@ -593,7 +598,12 @@ def BentleyOttmannAlgorithmIntegerEndpoints(
     heapq.heapify(events_heap)
     seen_crossings = {}
     
-    def findGreaterXCrossing(lower_edge: Tuple[int, int], lower_grad: CustomFraction, upper_edge: Tuple[int, int], upper_grad: CustomFraction) -> Optional[Tuple[CustomFraction, CustomFraction]]:
+    def findGreaterXCrossing(
+        lower_edge: Tuple[int, int],
+        lower_grad: CustomFraction,
+        upper_edge: Tuple[int, int],
+        upper_grad: CustomFraction
+    ) -> Optional[Tuple[CustomFraction, CustomFraction]]:
         if lower_grad < upper_grad: return None
         return twoDimensionalLineSegmentPairCrossing(
             (points[lower_edge[0]], points[lower_edge[1]]),
@@ -602,7 +612,11 @@ def BentleyOttmannAlgorithmIntegerEndpoints(
             allow_endpoint_to_endpoint=False,
         )
     
-    def addCrossing(edge1: Tuple[int, int], edge2: Tuple[int, int], crossing: Optional[Tuple[CustomFraction, CustomFraction]]) -> None:
+    def addCrossing(
+        edge1: Tuple[int, int],
+        edge2: Tuple[int, int],
+        crossing: Optional[Tuple[CustomFraction, CustomFraction]]
+    ) -> None:
         if crossing is None: return
         if crossing not in xings.keys():
             xings[crossing] = set()
@@ -632,7 +646,9 @@ def BentleyOttmannAlgorithmIntegerEndpoints(
     seg_line = SortedList()
     in_seg_dict = {}
 
-    def updateSurroundingSegments(p: Tuple[Union[CustomFraction, int], Union[CustomFraction, int]]) -> None:#, seg0):
+    def updateSurroundingSegments(
+        p: Tuple[Union[CustomFraction, int], Union[CustomFraction, int]],
+    ) -> None:
         #print("using updateSurroundingSegments()")
         #print(f"p = {p}")
         # From Below to Above
@@ -755,8 +771,7 @@ def BentleyOttmannAlgorithmIntegerEndpoints(
     print_rng = (1, -1)# (CustomFraction(140597, 310), CustomFraction(140603, 310))
 
     n_vertices = 0
-    res = {}
-    #res2 = 0
+    
     while events_heap:
         event = heapq.heappop(events_heap)
         #print(seg_line)

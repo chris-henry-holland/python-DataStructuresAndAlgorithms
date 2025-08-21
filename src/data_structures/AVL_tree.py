@@ -1,13 +1,19 @@
 #!/usr/bin/env python
 
-from typing import Any, Callable, Optional, Tuple, List, Dict, Set, Union
+from typing import (
+    Any,
+    Callable,
+    Optional,
+    Tuple, 
+    Union,
+)
 
 class AVLTreeNode:
     # Based on https://www.geeksforgeeks.org/introduction-to-avl-tree/?ref=lbp
     def __init__(
         self,
         val: Any,
-        comp_func: Callable[[Any, Any], int]
+        comp_func: Callable[[Any, Any], int],
     ):
         self.val = val
         self.comp_func = comp_func
@@ -64,7 +70,7 @@ class AVLTreeNode:
     
     def insert(
         self,
-        node: "AVLTreeNode"
+        node: "AVLTreeNode",
     ) -> Tuple[Union["AVLTreeNode", bool]]:
         # Based on https://www.geeksforgeeks.org/insertion-in-an-avl-tree/
         v = self.comp_func(self.val, node.val)
@@ -97,7 +103,7 @@ class AVLTreeNode:
     
     def delete(
         self,
-        val: Any
+        val: Any,
     ) -> Tuple[Union["AVLTreeNode", bool]]:
         # Based on https://www.geeksforgeeks.org/deletion-in-an-avl-tree/
         v = self.comp_func(self.val, val)
@@ -165,7 +171,7 @@ def defaultComparisonFunction(val1: Any, val2: Any) -> int:
 class AVLTree:
     def __init__(
         self,
-        comp_func: Optional[Callable[[Any, Any], int]]=None
+        comp_func: Optional[Callable[[Any, Any], int]]=None,
     ):
         self.comp_func = defaultComparisonFunction if comp_func is None\
                 else comp_func

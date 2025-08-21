@@ -1,6 +1,13 @@
 #!/usr/bin/env python
 
-from typing import Generator, Dict, List, Set, Tuple, Optional, Union
+from typing import (
+    List,
+    Tuple,
+    Set,
+    Dict,
+    Optional,
+    Union,
+)
 
 from collections import deque, Counter
 
@@ -186,7 +193,7 @@ def treeNodePairsTraversalStatistics(
 
 def countPairsOfConnectableServers(
     edges: List[List[int]],
-    signalSpeed: int
+    signalSpeed: int,
 ) -> List[int]:
     """
     

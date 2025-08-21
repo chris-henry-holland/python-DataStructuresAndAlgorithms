@@ -1,15 +1,19 @@
 #! /usr/bin/env python
 
-from typing import Dict, List, Tuple, Set, Union, Generator, Callable, Optional, Any, Hashable
+from typing import (
+    Tuple,
+    Generator,
+    Optional,
+)
 
 import heapq
 import itertools
 
-from algorithms.misc_mathematical_algorithms import isqrt, gcd
+from algorithms.number_theory_algorithms import isqrt, gcd
 
 def pythagoreanTripleGeneratorByHypotenuse(
     primitive_only: bool=False,
-    max_hypotenuse: Optional[int]=None
+    max_hypotenuse: Optional[int]=None,
 ) -> Generator[Tuple[Tuple[int, int, int], bool], None, None]:
     """
     Generator iterating over Pythagorean triples, yielding them
@@ -70,7 +74,7 @@ def pythagoreanTripleGeneratorByHypotenuse(
 
 def pythagoreanTripleGeneratorByPerimeter(
     primitive_only: bool=False,
-    max_perimeter: Optional[int]=None
+    max_perimeter: Optional[int]=None,
 ) -> Generator[Tuple[Tuple[int, int, int], int, bool], None, None]:
     """
     Generator iterating over Pythagorean triples, yielding them

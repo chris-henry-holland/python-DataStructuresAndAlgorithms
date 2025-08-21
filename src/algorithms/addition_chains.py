@@ -1,18 +1,15 @@
 #!/usr/bin/env python
 
 from typing import (
-    List,
     Tuple,
-    Set,
     Optional,
-    Union,
     Any,
 )
 
 import bisect
 import time
 
-from algorithms.misc_mathematical_algorithms import IntegerPartitionGenerator
+from algorithms.number_theory_algorithms import IntegerPartitionGenerator
 
 class AdditionChainCalculator(object):
 

@@ -2,12 +2,11 @@
 
 from typing import (
     Tuple,
-    List,
     Callable,
     Any,
 )
 
-class FenwickTree:
+class FenwickTree(object):
     """
     Creates a Fenwick tree for a sequence of elements of a commutative
     monoid. When first initialised, the every element of the sequence

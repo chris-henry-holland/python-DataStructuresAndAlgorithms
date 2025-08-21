@@ -2,10 +2,16 @@
 
 from typing import List
 
-from sortedcontainers import SortedList
 import random
 
-def uniformRandomDistinctIntegers(n: int, mn: int, mx: int) -> List[int]:
+from sortedcontainers import SortedList
+
+
+def uniformRandomDistinctIntegers(
+    n: int,
+    mn: int,
+    mx: int
+) -> List[int]:
     """
     Takes a uniform random sample of n distinct integers between mn and
     mx inclusive.

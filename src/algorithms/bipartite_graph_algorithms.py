@@ -10,11 +10,10 @@ from typing import (
     Union,
 )
 
-from collections import deque
-
-
-def hungarianAdjMatrix(adj_matrix: List[List[int]],\
-        eps: float=10 ** -5) -> Tuple[Union[int, Dict[int, int]]]:
+def hungarianAdjMatrix(
+    adj_matrix: List[List[int]],
+    eps: float=10 ** -5,
+) -> Tuple[Union[int, Dict[int, int]]]:
     """
     
     """
@@ -39,8 +38,9 @@ def hungarianAdjMatrix(adj_matrix: List[List[int]],\
         for i1 in range(n):
             adj_matrix2[i1][i2] -= mn
     
-    def coverRowsAndColumns(adj_matrix: List[List[int]])\
-            -> Tuple[Union[Set[int], Dict[int, int]]]:
+    def coverRowsAndColumns(
+        adj_matrix: List[List[int]],
+    ) -> Tuple[Union[Set[int], Dict[int, int]]]:
         #print(adj_matrix)
         uncovered_cols = set(range(n))
         uncovered_rows = set(range(n))
@@ -103,8 +103,9 @@ def hungarianAdjMatrix(adj_matrix: List[List[int]],\
             starred_rowcol_dict.items() if i1 < shape[0] and i2 < shape[1])
     return (tot, starred_rowcol_dict)
 
-def binMatrix2UnweightedBipartiteAdj(bin_adj_matrix: List[List[int]])\
-        -> Tuple[Union[List[Set[int]], int]]:
+def binMatrix2UnweightedBipartiteAdj(
+    bin_adj_matrix: List[List[int]],
+) -> Tuple[Union[List[Set[int]], int]]:
     # Kuhn's for unweighted bipartite graphs when graph
     # expressed as a binary adjacency matrix
     n1, n2 = len(bin_adj_matrix), len(bin_adj_matrix[0])
@@ -116,8 +117,10 @@ def binMatrix2UnweightedBipartiteAdj(bin_adj_matrix: List[List[int]])\
             adj[i2].add(i1)
     return (adj, n1)
 
-def kuhnAdj(adj: List[Set[int]], n1: int)\
-        -> Tuple[Union[List[int], int]]:
+def kuhnAdj(
+    adj: List[Set[int]],
+    n1: int,
+) -> Tuple[Union[List[int], int]]:
     # Kuhn's algorithm for unweighted bipartite graphs with graph
     # expressed as adjacency list.
     
@@ -141,13 +144,17 @@ def kuhnAdj(adj: List[Set[int]], n1: int)\
         res += (matches[idx] == -1 and dfs(idx))
     return res, matches
 
-def kuhnBinMatrix(bin_adj_matrix: List[List[int]])\
-        -> Tuple[Union[int, List[int]]]:
+def kuhnBinMatrix(
+    bin_adj_matrix: List[List[int]],
+) -> Tuple[Union[int, List[int]]]:
     # Kuhn's algorithm for unweighted bipartite graphs when graph
     # expressed as a binary adjacency matrix
     return kuhnAdj(*binMatrix2UnweightedBipartiteAdj(bin_adj_matrix))
 
-def hopcroftKarpAdj(adj: List[Set[int]], n1: int) -> int:
+def hopcroftKarpAdj(
+    adj: List[Set[int]],
+    n1: int,
+) -> int:
     # Hopcroft-Karp-Karzanov algorithm for unweighted bipartite graphs
     # with graph expressed as adjacency list.
     n = len(adj)
@@ -156,8 +163,10 @@ def hopcroftKarpAdj(adj: List[Set[int]], n1: int) -> int:
     unmatched1 = set(range(n1))
     unmatched2 = set(range(n1, n))
     
-    def createAugmentGraph(unmatched1: Set[int], unmatched2: Set[int])\
-            -> Tuple[Union[Dict[int, Set[int]], Set[int]]]:
+    def createAugmentGraph(
+        unmatched1: Set[int],
+        unmatched2: Set[int],
+    ) -> Tuple[Union[Dict[int, Set[int]], Set[int]]]:
         in_edges = {}
         out_edges = {}
         aug_found = False
@@ -204,8 +213,11 @@ def hopcroftKarpAdj(adj: List[Set[int]], n1: int) -> int:
         if not ends: return ({}, {}, set())
         return (out_edges, in_edges, ends)
     
-    def pruneAugmentGraph(idx: int, out_edges: Dict[int, Set[int]],\
-            in_edges: Dict[int, Set[int]]) -> None:
+    def pruneAugmentGraph(
+        idx: int,
+        out_edges: Dict[int, Set[int]],
+        in_edges: Dict[int, Set[int]],
+    ) -> None:
         #print(idx, out_edges, in_edges)
         def recur(idx: int) -> None:
             if idx in in_edges.keys():
@@ -219,9 +231,11 @@ def hopcroftKarpAdj(adj: List[Set[int]], n1: int) -> int:
             return
         return recur(idx)
     
-    def augmentMatches(ends: Set[int],\
-            out_edges: Dict[int, Set[int]],\
-            in_edges: Dict[int, Set[int]]) -> None:
+    def augmentMatches(
+        ends: Set[int],
+        out_edges: Dict[int, Set[int]],
+        in_edges: Dict[int, Set[int]],
+    ) -> None:
         
         def recur(idx: int, idx0: Optional[int]) -> None:
             if idx in unmatched1:
@@ -240,7 +254,6 @@ def hopcroftKarpAdj(adj: List[Set[int]], n1: int) -> int:
             recur(idx_nxt, idx)
             return
         
-        res = []
         for idx2 in ends:
             #print(idx2, ends, in_edges, unmatched2)
             if idx2 not in in_edges.keys(): continue
@@ -257,8 +270,9 @@ def hopcroftKarpAdj(adj: List[Set[int]], n1: int) -> int:
         #print(matches)
     return (matches, n1 - len(unmatched1))
 
-def hopcroftKarpBinMatrix(bin_adj_matrix: List[List[int]])\
-        -> Tuple[Union[int, List[int]]]:
+def hopcroftKarpBinMatrix(
+    bin_adj_matrix: List[List[int]]
+) -> Tuple[Union[int, List[int]]]:
     # Hopcroft-Karp-Karzanov algorithm for unweighted bipartite graphs
     # when graph expressed as a binary adjacency matrix
     return hopcroftKarpAdj(\
@@ -266,7 +280,8 @@ def hopcroftKarpBinMatrix(bin_adj_matrix: List[List[int]])\
 
 def fordFulkerson(
     graph: List[Dict[int, Union[int, float]]],
-    start: int, end: int
+    start: int,
+    end: int,
 ) -> Union[int, float]:
     eps = 10 ** -5
 

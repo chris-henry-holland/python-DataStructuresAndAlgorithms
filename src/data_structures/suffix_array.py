@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 
-from typing import Generator, Dict, List, Set, Tuple, Optional, Union
+from typing import (
+    Dict,
+    List,
+    Tuple,
+    Union,
+)
 
 import bisect
 
@@ -8,7 +13,8 @@ from sortedcontainers import SortedList
 from collections import deque
 
 class SuffixArray:
-    # Using SA-IS algorithm constructed based on https://zork.net/~st/jottings/sais.html
+    # Using SA-IS algorithm constructed based on
+    # https://zork.net/~st/jottings/sais.html
     """
     Class the constructs and utilises a suffix array for a given
     string, including creation of the longest common prefix (LCP)
@@ -168,7 +174,11 @@ class SuffixArray:
         elif l2 in hco.keys(): return -1
         return 1 if l1 < l2 else -1
 
-    def buildFrequencyArrays(self, nums: List[int], nums_mx: int) -> Tuple[List[int], List[int]]:
+    def buildFrequencyArrays(
+        self,
+        nums: List[int],
+        nums_mx: int,
+    ) -> Tuple[List[int], List[int]]:
         f_arr = [0] * (nums_mx + 1)
         for num in nums:
             f_arr[num] += 1
@@ -177,7 +187,10 @@ class SuffixArray:
             cumu_arr[i + 1] = cumu_arr[i] + f
         return (f_arr, cumu_arr)
     
-    def buildLSArrayAndLMS(self, nums: List[int]) -> Tuple[Union[List[bool], List[int]]]:
+    def buildLSArrayAndLMS(
+        self,
+        nums: List[int],
+    ) -> Tuple[Union[List[bool], List[int]]]:
         n = len(nums)
         arr = [True] * (n + 1)
         lms = []
@@ -191,7 +204,12 @@ class SuffixArray:
     
     def buildSuffixArray(self) -> List[int]:
 
-        def induceSortLS(nums: List[int], suff_arr: List[int], ls_arr: List[bool], cumu_arr: List[int]) -> None:
+        def induceSortLS(
+            nums: List[int],
+            suff_arr: List[int],
+            ls_arr: List[bool],
+            cumu_arr: List[int],
+        ) -> None:
             for (curr_inds, iter_obj, incr) in\
                     (([cumu_arr[i] for i in range(len(cumu_arr) - 1)],\
                     range(len(suff_arr)), 1),\
@@ -263,7 +281,8 @@ class SuffixArray:
     
     def buildLongestCommonPrefixArray(self) -> List[int]:
         # Kasai algorithm
-        # Based on https://leetcode.com/problems/number-of-distinct-substrings-in-a-string/solutions/1010936/python-suffix-array-lcp-o-n-logn/
+        # Based on 
+        # https://leetcode.com/problems/number-of-distinct-substrings-in-a-string/solutions/1010936/python-suffix-array-lcp-o-n-logn/
         suff_arr_inv = [0] * (self.n + 1)
         for rnk, idx in enumerate(self.suff_arr):
             suff_arr_inv[idx] = rnk
@@ -274,7 +293,8 @@ class SuffixArray:
                 length = 0
                 continue
             idx2 = self.suff_arr[rnk + 1]
-            while idx + length < self.n and idx2 + length < self.n and self.s[idx + length] == self.s[idx2 + length]:
+            while idx + length < self.n and idx2 + length < self.n and\
+                    self.s[idx + length] == self.s[idx2 + length]:
                 length += 1
             res[rnk] = length
             length = max(length - 1, 0)
@@ -295,7 +315,8 @@ class SuffixArray:
         return True
     
     def buildLCPLR(self, lcp: List[int]) -> List[int]:
-        # Based on https://stackoverflow.com/questions/38128092/how-do-we-construct-lcp-lr-array-from-lcp-array
+        # Based on 
+        # https://stackoverflow.com/questions/38128092/how-do-we-construct-lcp-lr-array-from-lcp-array
 
         # This array has length of the largest power of 2 that does not exceed
         # the length of s
@@ -319,28 +340,6 @@ class SuffixArray:
                 if i >= m: continue
                 res[idx] = min(res[idx << 1], res[(idx << 1) + 1], lcp[i])
         return res
-        """
-        n = len(lcp)
-        length = 1
-        pow2 = 0
-        while length < n:
-            length <<= 1
-            pow2 += 1
-        res = [0] * length
-        hlf_len = length >> 1
-        for i in range(len(lcp) >> 1):
-            res[i + hlf_len] = lcp[i << 1]
-        step2 = 2
-        idx = hlf_len
-        for _ in range(1, pow2):
-            step, step2 = step2, step2 << 1
-            for i in range(length - step - 1, -1, -step2):
-                idx -= 1
-                if i >= len(lcp): continue
-                res[idx] = min(res[idx << 1], res[(idx << 1) + 1], lcp[i])
-        print(res[:hlf_len])
-        return res[:hlf_len]
-        """
 
     def search(self, p: str) -> List[int]:
         lcp = self.lcp
@@ -351,7 +350,10 @@ class SuffixArray:
         lft, rgt = 0, (len(self.lcp_lr) << 1) - 1
         length = 0
 
-        def maximiseCommonLength(i: int, length: int) -> Tuple[Union[int, bool]]:
+        def maximiseCommonLength(
+            i: int,
+            length: int
+        ) -> Tuple[Union[int, bool]]:
             end = min(self.n - i, len(p))
             is_ge_p = False
             for j in range(length, end):
@@ -367,7 +369,13 @@ class SuffixArray:
                 is_ge_p = (end == len(p))
             return j, is_ge_p
         
-        def binarySearchStep(lft: int, rgt: int, mid: int, length: int, length2: int) -> Tuple[Union[int, bool]]:
+        def binarySearchStep(
+            lft: int,
+            rgt: int,
+            mid: int,
+            length: int,
+            length2: int,
+        ) -> Tuple[Union[int, bool]]:
             if mid > self.n:
                 return (lft, mid, length, True)
             length2 = lcp_lr[l_idx]
@@ -482,7 +490,10 @@ def countDistinct(s: str) -> int:
     return ((n * (n + 1)) >> 1) - sum(sa.lcp)
 
 def longestCommonSubstring(
-    s_lst: List[str], k: int, part_char_ascii_start: int=32) -> List[str]:
+    s_lst: List[str],
+    k: int,
+    part_char_ascii_start: int=32,
+) -> List[str]:
     """
     Finds the longest strings that each appear as contiguous
     substrings in at least k of the strings in s_lst.
