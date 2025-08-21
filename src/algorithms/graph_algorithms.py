@@ -1,12 +1,30 @@
 #!/usr/bin/env python
 
-from typing import Any, Dict, List, Set, Tuple, Optional, Union, Generator
+from typing import (
+    Any,
+    Hashable,
+    Dict,
+    List,
+    Set,
+    Tuple,
+    Optional,
+    Union,
+    Generator,
+    Callable,
+)
 
 import heapq
 
 from collections import deque
 
-def HierholzerAlgorithm(edges: List[list], start=None, sort: bool=False, reverse: bool=False) -> List[int]:
+Real = Union[int, float]
+
+def hierholzerAlgorithm(
+    edges: List[list],
+    start=None,
+    sort: bool=False,
+    reverse: bool=False
+) -> List[int]:
     """
     Finding an Eulerian path for a digraph using Hierholzer's algorithm.
     If none exists, returns empty list
@@ -54,37 +72,59 @@ def findItinerary(tickets: List[List[str]]) -> List[str]:
     Solution to Leetcode #332
     """
     start = "JFK"
-    return HierholzerAlgorithm(tickets, start=start, sort=True, reverse=False)
+    return hierholzerAlgorithm(tickets, start=start, sort=True, reverse=False)
 
-def weightedDirectedEdgesToAdj(v_lst: list, edges: List[list], choice_func=min) -> dict:
+def weightedDirectedEdgesToAdj(
+    v_lst: list,
+    edges: List[list],
+    choice_func=min,
+) -> dict:
     out_edges = {v: {} for v in v_lst}
     for e in edges:
         out_edges[e[0]][e[1]] = choice_func(out_edges[e[0]].get(e[1]), e[2])
     return out_edges
 
-def weightedUndirectedEdgesToAdj(v_lst: list, edges: List[list], choice_func=min) -> dict:
-    out_edges = {v: {} for v in v_lst}
+def weightedUndirectedEdgesToAdj(
+    v_lst: List[Hashable],
+    edges: List[Tuple[Hashable, Hashable, Real]],
+    choice_func=min,
+) -> Dict[Hashable, Dict[Hashable, Real]]:
+    out_adj = {v: {} for v in v_lst}
     for e in edges:
-        out_edges[e[0]][e[1]] = choice_func(out_edges[e[0]].get(e[1]), e[2])
-        out_edges[e[1]][e[0]] = out_edges[e[0]][e[1]]
-    return out_edges
+        if e[1] in out_adj[e[0]].keys():
+            out_adj[e[0]][e[1]] = choice_func(out_adj[e[0]].get(e[1]), e[2])
+        else: out_adj[e[0]][e[1]] = e[2]
+        out_adj[e[1]][e[0]] = out_adj[e[0]][e[1]]
+    return out_adj
 
-def DijkstraAdj(out_edges: dict, start) -> dict:
+def dijkstraAdj(
+    out_adj: Dict[Hashable, Dict[Hashable, Real]],
+    start: Hashable,
+) -> Dict[Hashable, Real]:
     res = {}
     heap = [(0, start)]
     while heap:
         d, v = heapq.heappop(heap)
         if v in res.keys(): continue
         res[v] = d
-        for v2, d2 in out_edges[v].items():
+        for v2, d2 in out_adj[v].items():
             if v2 in res.keys(): continue
             heapq.heappush(heap, (d + d2, v2))
     return res
 
-def DijkstraEdge(v_lst: list, edges: List[list], start) -> dict:
-    return DijkstraAdj(weightedDirectedEdgesToAdj(v_lst, edges), start)
+def dijkstraEdge(
+    v_lst: List[Hashable],
+    edges: List[Tuple[Hashable, Hashable, Real]],
+    start: Hashable,
+) -> Dict[Hashable, Real]:
+    return dijkstraAdj(
+        weightedDirectedEdgesToAdj(v_lst, edges),
+        start
+    )
 
-def FloydWarshallAdj(out_adj: dict) -> dict:
+def floydWarshallAdj(
+    out_adj: Dict[Hashable, Dict[Hashable, Real]],
+) -> Dict[Hashable, Dict[Hashable, Real]]:
     # Need to check
     # For weighted directed graph
     # Returns empty dictionary if negative weight cycle detected
@@ -106,18 +146,28 @@ def FloydWarshallAdj(out_adj: dict) -> dict:
     for v in v_lst: dists[v][v] = 0
     return dists
 
-def FloydWarshallEdge(v_lst: List[Any], edges: List[Tuple[Any, Any]], thresh: Union[int, float]=float("inf")) -> dict:
+def floydWarshallEdge(
+    v_lst: List[Any],
+    edges: List[Tuple[Any, Any]],
+) -> Dict[Hashable, Dict[Hashable, Real]]:
     # Need to check
     # For weighted directed graph
     # Returns empty dict if negative weight cycle detected
-    return FloydWarshallAdj(weightedDirectedEdgesToAdj(v_lst, edges, choice_func=min))
+    return floydWarshallAdj(
+        weightedDirectedEdgesToAdj(v_lst, edges, choice_func=min),
+    )
 
-def FloydWarshallThreshAdj(adj: dict, thresh: Union[int, float]=float("inf"), edges_under_thresh: bool=False) -> dict:
+def floydWarshallThreshAdj(
+    out_adj: Dict[Hashable, Dict[Hashable, Real]],
+    thresh: Real=float("inf"),
+    edges_under_thresh: bool=False
+) -> Dict[Hashable, Dict[Hashable, Real]]:
     # Need to check
     # For weighted undirected graph with no negative edge weights
-    v_lst = adj.keys()
-    if edges_under_thresh: dists = dict(adj)
-    else: dists = {v: {v2: d for v2, d in v2_dict.items() if d <= thresh} for v, v2_dict in adj.items()}
+    v_lst = out_adj.keys()
+    if edges_under_thresh:
+        dists = {x: dict(y) for x, y in out_adj.items()}
+    else: dists = {v: {v2: d for v2, d in v2_dict.items() if d <= thresh} for v, v2_dict in out_adj.items()}
     for u in v_lst:
         for v1 in dists[u].keys():
             d1 = dists[v1][u]
@@ -128,23 +178,38 @@ def FloydWarshallThreshAdj(adj: dict, thresh: Union[int, float]=float("inf"), ed
     for v in v_lst: dists[v][v] = 0
     return dists
 
-def FloydWarshallThreshEdge(v_lst: list, edges: List[list], thresh: Union[int, float]=float("inf")) -> dict:
+def floydWarshallThreshEdge(
+    v_lst: List[Hashable],
+    out_edges: List[Tuple[Hashable, Hashable, Real]],
+    thresh: Real=float("inf"),
+) -> Dict[Hashable, Dict[Hashable, Real]]:
     # Need to check
     # For weighted undirected graph with no negative edge weights
-    adj = {v: {} for v in v_lst}
-    for e in edges:
-        if e[2] > thresh: continue
-        adj[e[0]][e[1]] = min(adj[e[0]].get(e[1], float("inf")), e[2])
-        adj[e[1]][e[0]] = adj[e[0]][e[1]]
-    return FloydWarshallThreshAdj(adj, thresh, edges_under_thresh=True)
+    out_adj = weightedDirectedEdgesToAdj(v_lst, out_edges, choice_func=min)
+    for v1 in list(out_adj.keys()):
+        for v2 in list(out_adj[v1].keys()):
+            if out_adj[v1][v2] > thresh:
+                out_adj[v1].pop(v2)
+        if not out_adj[v1]:
+            out_adj.pop(v1)
+    
+    return floydWarshallThreshAdj(
+        out_adj,
+        thresh,
+        edges_under_thresh=True,
+    )
 
 
-def BellmanFordStepLimitAdj(out_edges: dict, start, mx_step: Union[int, float]=float("inf")) -> dict:
+def bellmanFordStepLimitAdj(
+    out_adj: Dict[Hashable, Dict[Hashable, Real]],
+    start: Hashable,
+    mx_step: Real=float("inf"),
+) -> Dict[Hashable, Real]:
     """
     Bellman-Ford Algorithm with digraph as weighted adjacency list where the
-    vertices are exactly the keys of out_edges
+    vertices are exactly the keys of out_adj
     """
-    row = {x: float("inf") for x in out_edges.keys()}
+    row = {x: float("inf") for x in out_adj.keys()}
     updated = {start}
     row[start] = 0
     for _ in range(mx_step):
@@ -152,7 +217,7 @@ def BellmanFordStepLimitAdj(out_edges: dict, start, mx_step: Union[int, float]=f
         updated2 = set()
         for v in updated:
             d = prev[v]
-            for v2, d2 in out_edges[v].items():
+            for v2, d2 in out_adj[v].items():
                 d3 = d + d2
                 if d3 < row[v2]:
                     updated2.add(v2)
@@ -161,20 +226,33 @@ def BellmanFordStepLimitAdj(out_edges: dict, start, mx_step: Union[int, float]=f
         updated = updated2
     return {k: (v if isinstance(v, int) else -1) for k, v in row.items()}
 
-def BellmanFordStepLimitEdges(v_lst: list, edges: List[list], start, mx_step: Union[int, float]=float("inf")) -> dict:
+def bellmanFordStepLimitEdges(
+    v_lst: List[Hashable],
+    out_edges: List[Tuple[Hashable, Hashable, Real]],
+    start: Hashable,
+    mx_step: Union[int, float]=float("inf"),
+) -> Dict[Hashable, Real]:
     """
     Bellman-Ford Algorithm with digraph as list of weighted directed edges where
     vertices are exactly the contents of v_lst
     """
-    return BellmanFordStepLimitAdj(weightedDirectedEdgesToAdj(v_lst, edges), start, mx_step)
+    return bellmanFordStepLimitAdj(
+        weightedDirectedEdgesToAdj(v_lst, out_edges, choice_func=min),
+        start,
+        mx_step,
+    )
 
-def SPFAAdj(out_edges: dict, start: int, weight_comb=lambda x, y: x + y) -> dict:
+def shortestPathFasterAlgorithmAdj(
+    out_adj: Dict[Hashable, Dict[Hashable, Real]],
+    start: Hashable,
+    weight_comb: Callable[[Real, Real], Real]=(lambda x, y: x + y),
+) -> Dict[Hashable, Real]:
     """
     Shortest Path Faster Algorithm (SPFA) variant of Bellman-Ford
     Returns empty dict if negative weight cycle is detected
     """
-    n = len(out_edges)
-    dists = {x: float("inf") for x in out_edges.keys()}
+    n = len(out_adj)
+    dists = {x: float("inf") for x in out_adj.keys()}
     dists[start] = 0
     qu = deque([(start, 0)])
     in_qu = {start}
@@ -182,7 +260,7 @@ def SPFAAdj(out_edges: dict, start: int, weight_comb=lambda x, y: x + y) -> dict
         v, n_step = qu.popleft()
         in_qu.remove(v)
         d = dists[v]
-        for v2, d2 in out_edges[v].items():
+        for v2, d2 in out_adj[v].items():
             d3 = weight_comb(d, d2)
             if d3 >= dists[v2]: continue
             if n_step == n - 1: return {}
@@ -192,16 +270,35 @@ def SPFAAdj(out_edges: dict, start: int, weight_comb=lambda x, y: x + y) -> dict
             in_qu.add(v2)
     return dists
 
-def KahnAdj(out_edges: dict, in_degrees: Optional[dict]=None) -> list:
+def shortestPathFasterAlgorithmEdge(
+    v_lst: List[Hashable],
+    out_edges: List[Tuple[Hashable, Hashable, Real]],
+    start: Hashable,
+    weight_comb: Callable[[Real, Real], Real]=(lambda x, y: x + y),
+) -> Dict[Hashable, Real]:
+    """
+    Shortest Path Faster Algorithm (SPFA) variant of Bellman-Ford
+    Returns empty dict if negative weight cycle is detected
+    """
+    return shortestPathFasterAlgorithmAdj(
+        weightedDirectedEdgesToAdj(v_lst, out_edges, choice_func=min),
+        start=start,
+        weight_comb=weight_comb,
+    )
+
+def kahnAdj(
+    out_adj: Dict[Hashable, Set[Hashable]],
+    in_degrees: Optional[Dict[Hashable, int]]=None,
+) -> List[Hashable]:
     """
     Kahn's algorithm for topological sorting with digraph as adjacency list
     where the vertices are exactly the keys of out_edges
     Returns empty list if a cycle is detected
     """
-    n = len(out_edges)
+    n = len(out_adj)
     if in_degrees is None:
-        in_degrees = {v: 0 for v in out_edges.keys()}
-        for v_set in out_edges.values():
+        in_degrees = {v: 0 for v in out_adj.keys()}
+        for v_set in out_adj.values():
             for v in v_set:
                 in_degrees[v] += 1
     else: in_degrees = dict(in_degrees) # Ensures argument in_degrees is not altered
@@ -212,24 +309,27 @@ def KahnAdj(out_edges: dict, in_degrees: Optional[dict]=None) -> list:
     while qu:
         v = qu.popleft()
         res.append(v)
-        for v2 in out_edges[v]:
+        for v2 in out_adj[v]:
             in_degrees[v2] -= 1
             if not in_degrees[v2]:
                 qu.append(v2)
     return res if len(res) == n else []
 
 
-def KahnEdge(v_lst: list, edges: List[list]) -> list:
+def kahnEdge(
+    v_lst: List[Hashable],
+    out_edges: List[Tuple[Hashable, Hashable]],
+) -> List[Hashable]:
     """
     Kahn's algorithm for topological sorting with digraph as list of
     directed edges where the vertices are exactly the contents of v_lst
     """
     out_edges = {v: set() for v in v_lst}
     in_degrees = {v: 0 for v in v_lst}
-    for e in edges:
+    for e in out_edges:
         out_edges[e[0]].add(e[1])
         in_degrees[e[1]] += 1
-    return KahnAdj(out_edges, in_degrees=in_degrees)
+    return kahnAdj(out_edges, in_degrees=in_degrees)
 
 def alienOrder(words: List[str]) -> str:
     """
@@ -247,22 +347,25 @@ def alienOrder(words: List[str]) -> str:
                     break
             else:
                 if len(w2) < len(w1): return ""
-    res = KahnAdj(out_edges)
+    res = kahnAdj(out_edges)
     return "".join(res)
 
-def KahnLayeringAdj(out_edges: dict, in_degrees: Optional[dict]=None) -> List[list]:
+def kahnLayeringAdj(
+    out_adj: Dict[Hashable, Set[Hashable]],
+    in_degrees: Optional[Dict[Hashable, int]]=None,
+) -> List[List[Hashable]]:
     """
     Kahn's algorithm for topological sorting with digraph as adjacency list
-    where the vertices are exactly the keys of out_edges, partitioning
+    where the vertices are exactly the keys of out_adj, partitioning
     the vertices into layers such that each vertex only has
     incoming edges from vertices in earlier layers and each vertex
     is in the earliest possible layer subject to this constraint.
     If cycle is detected, returns an empty list.
     """
-    n = len(out_edges)
+    n = len(out_adj)
     if in_degrees is None:
-        in_degrees = {v: 0 for v in out_edges.keys()}
-        for v_set in out_edges.values():
+        in_degrees = {v: 0 for v in out_adj.keys()}
+        for v_set in out_adj.values():
             for v in v_set:
                 in_degrees[v] += 1
     else: in_degrees = dict(in_degrees) # Ensures argument in_degrees is not altered
@@ -278,7 +381,7 @@ def KahnLayeringAdj(out_edges: dict, in_degrees: Optional[dict]=None) -> List[li
         for _ in range(l):
             v = qu.popleft()
             res[-1].append(v)
-            for v2 in out_edges[v]:
+            for v2 in out_adj[v]:
                 in_degrees[v2] -= 1
                 if not in_degrees[v2]:
                     qu.append(v2)
@@ -289,7 +392,10 @@ def KahnLayeringAdj(out_edges: dict, in_degrees: Optional[dict]=None) -> List[li
     return res if n_seen == n else []
 
 
-def KahnLayeringEdge(v_lst: list, edges: List[list]) -> List[list]:
+def kahnLayeringEdge(
+    v_lst: List[Hashable],
+    out_edges: List[Tuple[Hashable, Hashable]],
+) -> List[List[Hashable]]:
     """
     Kahn's algorithm for topological sorting with digraph as list of
     directed edges where the vertices are exactly the contents of v_lst,
@@ -300,22 +406,27 @@ def KahnLayeringEdge(v_lst: list, edges: List[list]) -> List[list]:
     """
     out_edges = {v: set() for v in v_lst}
     in_degrees = {v: 0 for v in v_lst}
-    for e in edges:
+    for e in out_edges:
         out_edges[e[0]].add(e[1])
         in_degrees[e[1]] += 1
-    print(out_edges, in_degrees)
-    return KahnLayeringAdj(out_edges, in_degrees=in_degrees)
+    #print(out_edges, in_degrees)
+    return kahnLayeringAdj(out_edges, in_degrees=in_degrees)
 
-def minimumSemesters(n: int, relations: List[List[int]]) -> int:
+def minimumSemesters(
+    n: int,
+    relations: List[List[int]]
+) -> int:
     """
     Solution to Leetcode #1136 (Parallel Courses) using Kahn's
     algorithm
     """
     if not n: return 0
-    res = len(KahnLayeringEdge(list(range(1, n + 1)), relations))
+    res = len(kahnLayeringEdge(list(range(1, n + 1)), relations))
     return res if res else -1
 
-def KosarajuAdj(out_edges: dict) -> Tuple[dict]:
+def kosarajuAdj(
+    out_adj: Dict[Hashable, Set[Hashable]],
+) -> Dict[Hashable, Hashable]:
     """
     Kosaraju algorithm for finding strongly connected components (SCC) in a
     directed graph (with the directed graph given as a dictionary,
@@ -331,38 +442,40 @@ def KosarajuAdj(out_edges: dict) -> Tuple[dict]:
     Can be used to solve Leetcode #1557 (when generalised to allow
     directed graphs with cycles- see below), #2101 (see below). In the
     examples included below, when input argument alg given as "Kosaraju",
-    KosarajuAdj() applied through condenseSCCAdj().
+    kosarajuAdj() applied through condenseSCCAdj().
     """
-    in_edges = {v: set() for v in out_edges.keys()}
-    for v1, v2_set in out_edges.items():
+    in_edges = {v: set() for v in out_adj.keys()}
+    for v1, v2_set in out_adj.items():
         for v2 in v2_set:
             in_edges[v2].add(v1)
     seen = set()
     scc_repr = {}
     top_sort_rev = []
     
-    def visit(v) -> None:
+    def visit(v: Hashable) -> None:
         if v in seen: return
         seen.add(v)
-        for v2 in out_edges[v]:
+        for v2 in out_adj[v]:
             visit(v2)
         top_sort_rev.append(v)
         return
         
-    def assign(v, v0) -> None:
+    def assign(v: Hashable, v0: Hashable) -> None:
         if v in scc_repr.keys(): return
         scc_repr[v] = v0
         for v2 in in_edges[v]:
             assign(v2, v0)
         return
     
-    for v in out_edges.keys():
+    for v in out_adj.keys():
         visit(v)
     for v in reversed(top_sort_rev):
         assign(v, v)
     return scc_repr
     
-def TarjanSCCAdj(out_edges: dict) -> dict:
+def tarjanSCCAdj(
+    out_adj: Dict[Hashable, Set[Hashable]],
+) -> Dict[Hashable, Hashable]:
     """
     Tarjan algorithm for finding strongly connected components (SCC) in a
     directed graph (with the directed graph given as a dictionary,
@@ -378,14 +491,14 @@ def TarjanSCCAdj(out_edges: dict) -> dict:
     Can be used to solve Leetcode #1557 (when generalised to allow
     directed graphs with cycles- see below), #2101 (see below) In the
     examples included below, when input argument alg given as "Tarjan",
-    TarjanSCCAdj() applied through condenseSCCAdj().
+    tarjanSCCAdj() applied through condenseSCCAdj().
     """
     lo = {}
     stk = []
     in_stk = set()
     scc_repr = {}
 
-    def recur(v: int, t: int) -> int:
+    def recur(v: Hashable, t: int) -> int:
         if v in lo.keys():
             return t
         t0 = t
@@ -393,7 +506,7 @@ def TarjanSCCAdj(out_edges: dict) -> dict:
         stk.append(v)
         in_stk.add(v)
         t += 1
-        for v2 in out_edges[v]:
+        for v2 in out_adj[v]:
             t = recur(v2, t)
             if v2 in in_stk:
                 lo[v] = min(lo[v], lo[v2])
@@ -407,11 +520,14 @@ def TarjanSCCAdj(out_edges: dict) -> dict:
         scc_repr[v] = v
         return t
     t = 0
-    for v in out_edges.keys():
+    for v in out_adj.keys():
         t = recur(v, t)
     return scc_repr
 
-def condenseSCCAdj(out_edges: dict, alg: str="Tarjan") -> Tuple[dict]:
+def condenseSCCAdj(
+    out_adj: Dict[Hashable, Set[Hashable]],
+    alg: str="Tarjan",
+) -> Tuple[Dict[Hashable, Hashable], Dict[Hashable, Set[Hashable]], Dict[Hashable, Set[Hashable]], Dict[Hashable, int]]:
     """
     Finds the strongly connected components (SCC) in a
     directed graph (with the directed graph given as a dictionary,
@@ -445,30 +561,33 @@ def condenseSCCAdj(out_edges: dict, alg: str="Tarjan") -> Tuple[dict]:
     if alg not in {"Tarjan", "Kosaraju"}:
         raise ValueError("Input argument alg must be either 'Tarjan' or "
             'Kosarau')
-    func = TarjanSCCAdj if alg == "Tarjan" else KosarajuAdj
+    func = tarjanSCCAdj if alg == "Tarjan" else kosarajuAdj
     
-    scc_repr = func(out_edges)
+    scc_repr = func(out_adj)
     scc_groups = {}
     for v1, v2 in scc_repr.items():
         scc_groups.setdefault(v2, set())
         scc_groups[v2].add(v1)
-    out_edges_scc = {v: set() for v in scc_groups.keys()}
+    out_adj_scc = {v: set() for v in scc_groups.keys()}
     in_degree_scc = {v: 0 for v in scc_groups.keys()}
     
-    for v1, v2_set in out_edges.items():
+    for v1, v2_set in out_adj.items():
         r1 = scc_repr[v1]
         for v2 in v2_set:
             r2 = scc_repr[v2]
             if r2 == r1: continue
-            out_edges_scc[r1].add(r2)
+            out_adj_scc[r1].add(r2)
             in_degree_scc[r2] += 1
-    return (scc_repr, scc_groups, out_edges_scc, in_degree_scc)
-    
+    return (scc_repr, scc_groups, out_adj_scc, in_degree_scc)
 
-def findSmallestSetOfVertices(n: int, edges: List[List[int]], alg: str="Tarjan") -> List[int]:
+def findSmallestSetOfVertices(
+    n: int,
+    edges: List[List[int, int]],
+    alg: str="Tarjan"
+) -> List[int]:
     """
     Modified Leetcode #1557 (demonstrates possible use of KosarauAdj() and
-    TarjanSCCAdj() through condenseSCCAdj())
+    tarjanSCCAdj() through condenseSCCAdj())
     
     Original description:
     
@@ -485,7 +604,7 @@ def findSmallestSetOfVertices(n: int, edges: List[List[int]], alg: str="Tarjan")
     problem)- gives one of the possible solutions
     
     Input argument alg can be "Tarjan" or "Kosaraju", the former using
-    TarjanSCCAdj() and the latter using KosarauAdj() (through
+    tarjanSCCAdj() and the latter using KosarauAdj() (through
     condenseSCCAdj()).
     """
     # Note to get every possible solution, give all combinations where
@@ -497,10 +616,13 @@ def findSmallestSetOfVertices(n: int, edges: List[List[int]], alg: str="Tarjan")
     in_degree_scc = condenseSCCAdj(out_edges, alg=alg)[3]
     return [x for x, y in in_degree_scc.items() if not y]
 
-def maximumDetonation(bombs: List[List[int]], alg: str="Tarjan") -> int:
+def maximumDetonation(
+    bombs: List[List[int]],
+    alg: str="Tarjan"
+) -> int:
     """
-    Leetcode #2101 (demonstrates possible use of KosarauAdj() and
-    TarjanSCCAdj() through condenseSCCAdj())
+    Leetcode #2101 (demonstrates possible use of kosarauAdj() and
+    tarjanSCCAdj() through condenseSCCAdj())
     
     Description:
     
@@ -521,11 +643,11 @@ def maximumDetonation(bombs: List[List[int]], alg: str="Tarjan") -> int:
     be detonated if you are allowed to detonate only one bomb.
     
     Input argument alg can be "Tarjan" or "Kosaraju", the former using
-    TarjanSCCAdj() and the latter using KosarajuAdj() (through
+    tarjanSCCAdj() and the latter using kosarajuAdj() (through
     condenseSCCAdj()).
     """
     n = len(bombs)
-    out_edges = {i: set() for i in range(n)}
+    out_adj = {i: set() for i in range(n)}
     dist_sq = [0] * n
     for i1, (x1, y1, r1) in enumerate(bombs):
         dist_sq[i1] = r1 ** 2
@@ -533,30 +655,32 @@ def maximumDetonation(bombs: List[List[int]], alg: str="Tarjan") -> int:
             x2, y2, r2 = bombs[i2]
             ds = (x2 - x1) ** 2 + (y2 - y1) ** 2
             if ds <= dist_sq[i1]:
-                out_edges[i1].add(i2)
+                out_adj[i1].add(i2)
             if ds <= dist_sq[i2]:
-                out_edges[i2].add(i1)
+                out_adj[i2].add(i1)
 
-    scc_repr, scc_groups, out_edges_scc, in_degree_scc =\
-            condenseSCCAdj(out_edges, alg=alg)
+    scc_repr, scc_groups, out_adj_scc, in_degree_scc =\
+            condenseSCCAdj(out_adj, alg=alg)
     sz_dict = {v: len(v2_set) for v, v2_set in scc_groups.items()}
     memo = {}
     def dfs(v: int) -> Set[int]:
         args = v
         if args in memo.keys(): return memo[args]
         res = {v}
-        for v2 in out_edges_scc[v]:
+        for v2 in out_adj_scc[v]:
             res |= dfs(v2)
         memo[args] = res
         return res
     
     res = 0
-    for v in out_edges_scc.keys():
+    for v in out_adj_scc.keys():
         if in_degree_scc[v]: continue
         res = max(res, sum(sz_dict[v2] for v2 in dfs(v)))
     return res
 
-def TarjanBridgeAdj(graph: dict) -> Tuple[tuple]:
+def tarjanBridgeAdj(
+    out_adj: Dict[Hashable, Set[Hashable]],
+) -> List[Tuple[Hashable, Hashable]]:
     """
     Tarjan bridge algorithm. Identifies all bridges in a
     graph. A bridge is an edge of the graph which, if
@@ -587,7 +711,7 @@ def TarjanBridgeAdj(graph: dict) -> Tuple[tuple]:
         t0 = t
         lo[v] = t
         t += 1
-        for v2 in graph[v]:
+        for v2 in out_adj[v]:
             if v2 == parent: continue
             t = dfs(v2, t, v)
             lo[v] = min(lo[v], lo[v2])
@@ -596,13 +720,16 @@ def TarjanBridgeAdj(graph: dict) -> Tuple[tuple]:
         return t
     
     t = 0
-    for v in graph.keys():
+    for v in out_adj.keys():
         t = dfs(v, t)
-    return tuple(bridges)
+    return bridges
 
-def criticalConnections(n: int, connections: List[List[int]]) -> List[List[int]]:
+def criticalConnections(
+    n: int,
+    connections: List[List[int]],
+) -> List[List[int]]:
     """
-    Leetcode #1192 (demonstrates possible use of TarjanBridgeAdj)
+    Leetcode #1192 (demonstrates possible use of tarjanBridgeAdj())
     
     Description:
     
@@ -622,9 +749,11 @@ def criticalConnections(n: int, connections: List[List[int]]) -> List[List[int]]
         graph[e[0]].add(e[1])
         graph[e[1]].add(e[0])
 
-    return TarjanBridgeAdj(graph)
+    return tarjanBridgeAdj(graph)
 
-def TarjanArticulationAdj(graph: dict) -> tuple:
+def tarjanArticulationAdj(
+    out_adj: Dict[Hashable, Set[Hashable]],
+) -> Set[Hashable]:
     """
     Tarjan articulation point algorithm. Identifies all
     articulation points in an undirected graph. An
@@ -651,35 +780,38 @@ def TarjanArticulationAdj(graph: dict) -> tuple:
     #  {0: {1, 2, 3}, 1: {0, 2}, 2: {0, 1}, 3: {0, 4, 5},
     #        4: {3}, 5: {3}} - answer (3, 0)
     
-    artic = []
+    artic = set()
     lo = {}
 
-    def dfs(v, t: int, parent=None) -> int:
+    def dfs(v: Hashable, t: int, parent: Optional[Hashable]=None) -> int:
         if v in lo.keys(): return t
         t0 = t
         lo[v] = t
         t += 1
-        for v2 in graph[v]:
+        for v2 in out_adj[v]:
             if v2 == parent: continue
             t = dfs(v2, t, v)
             lo[v] = min(lo[v], lo[v2])
         if t > t0 + 1 and lo[v] == t0:
-            artic.append(v)
+            artic.add(v)
         return t
     
     t = 0
-    for v in graph.keys():
+    for v in out_adj.keys():
         if v in lo.keys(): continue
         lo[v] = t
         child_count = 0
-        for v2 in graph[v]:
+        for v2 in out_adj[v]:
             if v2 in lo.keys(): continue
             child_count += 1
             t = dfs(v2, t + 1, parent=v)
-        if child_count > 1: artic.append(v)
-    return tuple(artic)
+        if child_count > 1: artic.add(v)
+    return artic
 
-def TarjanArticulationAdjGrid(grid: List[List[Any]], open_obj: Any) -> Union[List[Set[Tuple[int]]], Set[Tuple[int]]]:
+def tarjanArticulationAdjGrid(
+    grid: List[List[Any]],
+    open_obj: Any
+) -> Union[List[Set[Tuple[int]]], Set[Tuple[int]]]:
     # Check and adapt to generic graph (Leetcode #1263)
     """
     Modified Tarjan Algorithm for finding articulation points in

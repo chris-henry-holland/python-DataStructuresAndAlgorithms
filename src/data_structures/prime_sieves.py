@@ -10,7 +10,10 @@ import time
 
 from algorithms.misc_mathematical_algorithms import isqrt
 
-def largestLEpowN(num: Union[int, float], base: int=10) -> int:
+def largestLEpowN(
+    num: Union[int, float],
+    base: int=10
+) -> int:
     if num <= base: return 1
     base_lst = [base]
     while base_lst[-1] < num:
@@ -30,7 +33,11 @@ class SimplePrimeSieve:
     """
     Simple prime sieve
     """
-    def __init__(self, n_max: Optional[int]=None, use_p_lst: bool=True):
+    def __init__(
+        self,
+        n_max: Optional[int]=None,
+        use_p_lst: bool=True
+    ):
         if n_max is None: n_max = 2
         self.sieve = [False, False, True, True]
         self.use_p_lst = use_p_lst
@@ -89,7 +96,12 @@ class SimplePrimeSieve:
         return
 
     @staticmethod
-    def _millerRabinTrial(n: int, s: int, d: int, a: int) -> bool:
+    def _millerRabinTrial(
+        n: int,
+        s: int,
+        d: int,
+        a: int
+    ) -> bool:
         x = pow(a, d, n)
         for _ in range(s):
             y = pow(x, 2, n)
@@ -99,7 +111,12 @@ class SimplePrimeSieve:
         if y != 1: return False
         return True
     
-    def millerRabinPrimalityTest(self, n: int, a_vals: List[int], max_n_additional_trials: int=3) -> bool:
+    def millerRabinPrimalityTest(
+        self,
+        n: int,
+        a_vals: List[int],
+        max_n_additional_trials: int=3
+    ) -> bool:
         seen = {0}
         s = 1
         d = (n - 1) >> 1
@@ -115,18 +132,13 @@ class SimplePrimeSieve:
                 a = random.randrange(2, n - 1)
             seen.add(a)
             if not self._millerRabinTrial(n, s, a): return False
-            """
-            x = pow(a, d, n)
-            for _ in range(s):
-                y = pow(x, 2, n)
-                if y == 1 and x != 1 and x != n - 1:
-                    return False
-                x = y
-            if y != 1: return False
-            """
         return True
     
-    def millerRabinPrimalityTestWithKnownBounds(self, n: int, max_n_additional_trials_if_above_max: int=10) -> Tuple[bool, bool]:
+    def millerRabinPrimalityTestWithKnownBounds(
+        self,
+        n: int,
+        max_n_additional_trials_if_above_max: int=10
+    ) -> Tuple[bool, bool]:
         # List from https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test
         # index 0 signifies if the test shows n is a prime, index
         # 1 signifies whether that test definitely gave the correct
@@ -165,10 +177,14 @@ class SimplePrimeSieve:
             if not self._millerRabinTrial(n, s, d, a): return (False, True)
         return (True, False)
     
-    def isPrime(self, n: int, extend_sieve: bool=False,\
-            extend_sieve_sqrt: bool=False,\
-            use_miller_rabin_screening: bool=False,\
-            n_miller_rabin_trials: int=3) -> bool:
+    def isPrime(
+        self,
+        n: int,
+        extend_sieve: bool=False,
+        extend_sieve_sqrt: bool=False,
+        use_miller_rabin_screening: bool=False,
+        n_miller_rabin_trials: int=3
+    ) -> bool:
         """
         Checks if the strictly positive integer n is prime.
         

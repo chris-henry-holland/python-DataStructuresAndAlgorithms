@@ -231,6 +231,7 @@ class SegmentTree(object):
             r = ((r + 1) >> 1)
         return
 
+# Review- consider making this a child class of SegmentTree
 class SegmentTreeWithLazyPropogation(object):
     
     """

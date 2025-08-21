@@ -4,14 +4,13 @@ from typing import Dict, List, Tuple, Set, Union, Generator, Callable, Optional,
 
 import heapq
 import itertools
-import math
 
 from algorithms.misc_mathematical_algorithms import isqrt, gcd
 
-isqrt = math.isqrt
-gcd = math.gcd
-
-def pythagoreanTripleGeneratorByHypotenuse(primitive_only: bool=False, max_hypotenuse: Optional[int]=None) -> Generator[Tuple[Tuple[int, int, int], bool], None, None]:
+def pythagoreanTripleGeneratorByHypotenuse(
+    primitive_only: bool=False,
+    max_hypotenuse: Optional[int]=None
+) -> Generator[Tuple[Tuple[int, int, int], bool], None, None]:
     """
     Generator iterating over Pythagorean triples, yielding them
     in order of increasing size of the hypotenuse (i.e. the largest
@@ -69,7 +68,10 @@ def pythagoreanTripleGeneratorByHypotenuse(primitive_only: bool=False, max_hypot
             heapq.heappush(heap, ((c, b, a), (c, b, a), True))
     return
 
-def pythagoreanTripleGeneratorByPerimeter(primitive_only: bool=False, max_perimeter: Optional[int]=None) -> Generator[Tuple[Tuple[int, int, int], int, bool], None, None]:
+def pythagoreanTripleGeneratorByPerimeter(
+    primitive_only: bool=False,
+    max_perimeter: Optional[int]=None
+) -> Generator[Tuple[Tuple[int, int, int], int, bool], None, None]:
     """
     Generator iterating over Pythagorean triples, yielding them
     in order of increasing size of the perimeter (i.e. the sum

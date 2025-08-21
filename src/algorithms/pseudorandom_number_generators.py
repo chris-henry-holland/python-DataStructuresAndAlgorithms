@@ -6,7 +6,12 @@ from collections import deque
 
 
 
-def generalisedLaggedFibonacciGenerator(poly_coeffs: Tuple[int]=(100003, -200003, 0, 300007), lags: Tuple[int]=(24, 55), min_val: int=0, max_val: int=10 ** 6 - 1) -> Generator[int, None, None]:
+def generalisedLaggedFibonacciGenerator(
+    poly_coeffs: Tuple[int]=(100003, -200003, 0, 300007),
+    lags: Tuple[int]=(24, 55),
+    min_val: int=0,
+    max_val: int=10 ** 6 - 1
+) -> Generator[int, None, None]:
     """
     Generator iterating over the terms in a generalisation
     of a lagged Fibonacci generator sequence for given for a
@@ -99,7 +104,12 @@ def generalisedLaggedFibonacciGenerator(poly_coeffs: Tuple[int]=(100003, -200003
         yield num
     return
 
-def blumBlumShubPseudoRandomGenerator(s_0: int=290797, s_mod: int=50515093, t_min: int=0, t_max: int=499) -> Generator[int, None, None]:
+def blumBlumShubPseudoRandomGenerator(
+    s_0: int=290797,
+    s_mod: int=50515093,
+    t_min: int=0,
+    t_max: int=499
+) -> Generator[int, None, None]:
     """
     Generator iterating over the terms in a Blum Blum Shub sequence
     for a given seed value, modulus and value range.

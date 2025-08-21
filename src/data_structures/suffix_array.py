@@ -2,6 +2,9 @@
 
 from typing import Generator, Dict, List, Set, Tuple, Optional, Union
 
+import bisect
+
+from sortedcontainers import SortedList
 from collections import deque
 
 class SuffixArray:
@@ -478,10 +481,8 @@ def countDistinct(s: str) -> int:
     sa = SuffixArray(s)
     return ((n * (n + 1)) >> 1) - sum(sa.lcp)
 
-from sortedcontainers import SortedList
-from collections import deque
-import bisect
-def longestCommonSubstring(s_lst: List[str], k: int, part_char_ascii_start: int=32) -> List[str]:
+def longestCommonSubstring(
+    s_lst: List[str], k: int, part_char_ascii_start: int=32) -> List[str]:
     """
     Finds the longest strings that each appear as contiguous
     substrings in at least k of the strings in s_lst.

@@ -5,12 +5,15 @@ from typing import Generator, Dict, List, Set, Tuple, Optional, Union
 from collections import deque, Counter
 
 
-def findCentralNodes(graph: List[Set[int]], deepcopy_graph: bool=True) -> Tuple[int]:
+def findCentralNodes(
+    graph: List[Set[int]],
+    preserve_graph: bool=True,
+) -> Tuple[int]:
     # BFS
     
     # Creating deepcopy of graph as the algorithm deconstructs the
     # graph during the calculation
-    if deepcopy_graph:
+    if preserve_graph:
         graph = [set(x) for x in graph]
     n = len(graph)
     qu = deque()
@@ -41,7 +44,11 @@ def createBinaryLift(parent: List[int]) -> List[List[int]]:
     return res
 
 class TreeLowestCommonAncestorFinder:
-    def __init__(self, graph: List[Set[int]], root: Optional[int]=None):
+    def __init__(
+        self,
+        graph: List[Set[int]],
+        root: Optional[int]=None
+    ):
         self.graph = graph
         if root is None:
             root = findCentralNodes(graph)[0]
@@ -98,7 +105,11 @@ class TreeLowestCommonAncestorFinder:
         # in the level found
         return self.bin_lift[idx1][0]
 
-def closestNode(n: int, edges: List[List[int]], query: List[List[int]]) -> List[int]:
+def closestNode(
+    n: int,
+    edges: List[List[int]],
+    query: List[List[int]]
+) -> List[int]:
     """
     
     
@@ -145,7 +156,7 @@ def closestNode(n: int, edges: List[List[int]], query: List[List[int]]) -> List[
     return res
 
 def treeNodePairsTraversalStatistics(
-    adj: List[Dict[int, Union[int, float]]]
+    adj: List[Dict[int, Union[int, float]]],
 ) -> List[Dict[int, Tuple[Union[int, float], int]]]:
     """
     For each pair of nodes in a weighted undirected tree, finds the

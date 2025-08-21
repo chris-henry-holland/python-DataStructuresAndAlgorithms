@@ -9,7 +9,9 @@ from sortedcontainers import SortedList
 
 from algorithms.misc_mathematical_algorithms import CustomFraction, gcd
 
-def determinant(mat: List[List[Union[int, float]]]) -> Union[int, float]:
+def determinant(
+    mat: List[List[Union[int, float]]]
+) -> Union[int, float]:
     """
     Calculates the determinant of a square matrix mat.
 
@@ -43,8 +45,9 @@ def determinant(mat: List[List[Union[int, float]]]) -> Union[int, float]:
         return res
     return recur(0)
 
-def circumcircle(points: List[Tuple[Union[int, float]]])\
-        -> Tuple[Union[Tuple[Union[int, float]], Union[int, float]]]:
+def circumcircle(
+    points: List[Tuple[Union[int, float]]]
+) -> Tuple[Union[Tuple[Union[int, float]], Union[int, float]]]:
     """
     For a set of between 1 and 3 points (inclusive) in the 2d plane,
     finds the centre and radius squared of the smallest circle passing
@@ -93,8 +96,9 @@ def circumcircle(points: List[Tuple[Union[int, float]]])\
     rad_sq = sum((x - y) ** 2 for x, y in zip(points[0], centre))
     return (centre, rad_sq)
 
-def welzl(points: List[Tuple[Union[int, float]]])\
-        -> Tuple[Union[Tuple[Union[int, float]], Union[int, float]]]:
+def welzl(
+    points: List[Tuple[Union[int, float]]]
+) -> Tuple[Union[Tuple[Union[int, float]], Union[int, float]]]:
     """
     Uses the Welzl algorithm to find the centre and radius squared of
     the smallest circle that encloses every one of a set of points
@@ -180,7 +184,10 @@ def smallestCircularEnclosure(trees: List[List[int]]) -> List[float]:
     centre, rad_sq = welzl(trees, eps=eps)
     return [*centre, math.sqrt(rad_sq)]
 
-def grahamScan(points: List[Tuple[Union[int, float]]], include_border_points: bool=False) -> List[Tuple[Union[int, float]]]:
+def grahamScan(
+    points: List[Tuple[Union[int, float]]],
+    include_border_points: bool=False
+) -> List[Tuple[Union[int, float]]]:
     """
     Implementation of the Graham scan to find the convex hull of a set
     of points in 2 dimensional space expressed in Cartesian coordinates.
@@ -315,7 +322,10 @@ def outerTrees(trees: List[List[int]]) -> List[List[int]]:
     """
     return [list(y) for y in grahamScan([tuple(x) for x in trees], include_border_points=True)]
 
-def twoDimensionalLineEquationGivenTwoIntegerPoints(p1: Tuple[int, int], p2: Tuple[int, int]) -> Tuple[int, int, int]:
+def twoDimensionalLineEquationGivenTwoIntegerPoints(
+    p1: Tuple[int, int],
+    p2: Tuple[int, int]
+) -> Tuple[int, int, int]:
     """
     Calculates the equation for the line in two dimensional space
     which contains the two distinct points p1 and p2 that both have
@@ -495,7 +505,7 @@ def twoDimensionalLineSegmentPairCrossing(
     return (x, y)
 
 def BentleyOttmannAlgorithmIntegerEndpoints(
-        line_segments: List[Tuple[Tuple[int, int], Tuple[int, int]]]
+    line_segments: List[Tuple[Tuple[int, int], Tuple[int, int]]],
 ) -> Dict[Tuple[CustomFraction, CustomFraction], List[Set[Tuple[Tuple[int, int], Tuple[int, int]]]]]:
     def gradient(p1: Tuple[int, int], p2: Tuple[int, int]) -> CustomFraction:
         if p1 == p2: return 0

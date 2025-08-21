@@ -1,16 +1,24 @@
 #!/usr/bin/env python
 
-from typing import List, Tuple, Set, Optional, Union
+from typing import (
+    List,
+    Tuple,
+    Set,
+    Optional,
+    Union,
+    Any,
+)
 
 import bisect
-import math
 import time
 
-
-
-def PartitionIntGen(n: int, min_n_part: int=0, max_n_part: Optional[int]=None,
-                    min_part_size: int=1, balanced_first: bool=True):
-
+def IntegerPartitionGenerator(
+    n: int,
+    min_n_part: int=0,
+    max_n_part: Optional[int]=None,
+    min_part_size: int=1,
+    balanced_first: bool=True
+):
     mx = n if max_n_part is None else max_n_part
     mn = min_n_part
     if mx == 0 and n == 0:
@@ -24,7 +32,7 @@ def PartitionIntGen(n: int, min_n_part: int=0, max_n_part: Optional[int]=None,
     iter_obj = range(min_part_size, n - min_part_size + 1)
     if balanced_first: iter_obj = reversed(iter_obj)
     for i in iter_obj:
-        for part in PartitionIntGen(n - i, max(mn - 1, 0), mx - 1, i):
+        for part in IntegerPartitionGenerator(n - i, max(mn - 1, 0), mx - 1, i):
             yield [i, *part]
     if mn <= 1 and not balanced_first: yield [n]
     return
@@ -36,7 +44,11 @@ class AdditionChainCalculator(object):
         self.precursors_Brauer = self.precursors_exact
         self.precursors_approx = self.precursors_exact
 
-    def shortestAddChainsApprox(self, n: int, force_approx: bool=False) -> Tuple[dict]:
+    def shortestAddChainsApprox(
+        self,
+        n: int,
+        force_approx: bool=False
+    ) -> Tuple[dict]:
         """"
         Identifies a series of steps for each positive integer up to n that
         approximately minimises the addition chain for that number.
@@ -45,11 +57,9 @@ class AdditionChainCalculator(object):
         First occurrence of a chain calculated whose length is not the
         minimum is for n = 77
         """
-        
-        since = time.time()
         if not force_approx and len(self.precursors_exact) >= n + 1:
-            # If exact precursors already calculated then unless there is a reason not,
-            # use those rather than the approximate ones.
+            # If exact precursors already calculated then unless there is
+            # a reason not, use those rather than the approximate ones.
             return self.precursors_exact[:n + 1]
         elif len(self.precursors_approx) >= n + 1:
             return self.precursors_approx[:n + 1]
@@ -71,11 +81,14 @@ class AdditionChainCalculator(object):
             bp.append(best)
         
         self.precursors_approx = tuple(bp)
-        #print(time.time() - since)
         
         return self.precursors_approx
     
-    def shortestAddPathApprox(self, n: int, force_approx: bool=False) -> Tuple[int]:
+    def shortestAddPathApprox(
+        self,
+        n: int,
+        force_approx: bool=False
+    ) -> Tuple[int]:
         """
         Identifies the path with approximately minimum steps to successively
         add to get from 1 to the integer n.
@@ -95,7 +108,11 @@ class AdditionChainCalculator(object):
             out_list[i] = tuple(pair)
         return tuple(out_list)
         
-    def shortestAddChainsBrauer(self, n: int, force_Brauer: bool=False) -> Tuple[dict]:
+    def shortestAddChainsBrauer(
+        self,
+        n: int,
+        force_Brauer: bool=False
+    ) -> Tuple[dict]:
         """
         Identifies a series of steps for each positive integer up to n that
         approximately minimises the addition chain for that number using
@@ -139,7 +156,11 @@ class AdditionChainCalculator(object):
         self.precursors_Brauer = tuple(bp)
         return self.precursors_Brauer
     
-    def shortestAddPathBrauer(self, n: int, force_Brauer: bool=False) -> Tuple[int]:
+    def shortestAddPathBrauer(
+        self,
+        n: int,
+        force_Brauer: bool=False
+    ) -> Tuple[int]:
         """
         Identifies the path with approximately minimum steps (from Brauer chain)
         to successively add to get from 1 to the integer n.
@@ -246,7 +267,7 @@ class AdditionChainCalculator(object):
             out_list[i] = tuple(prec_map[j] for j in pair)
         return tuple(out_list)
 
-    def pathValidityChk(self, n_max: int, method: str="Brauer") -> str:
+    def pathValidityCheck(self, n_max: int, method: str="Brauer") -> str:
         kwargs = {}
         if method == "approx":
             func = self.shortestAddPathApprox
@@ -260,7 +281,7 @@ class AdditionChainCalculator(object):
             func = self.shortestAddPathBinary
         else:
             raise ValueError(f"The value for the Exponentiator method "
-                    f"pathValidityChk() named argument method is '{method}', "
+                    f"pathValidityCheck() named argument method is '{method}', "
                     "which is not a valid value for this argument.")
         
         fail_list = ["Failed for the following values:"]
@@ -279,12 +300,21 @@ class AdditionChainCalculator(object):
 
 class Exponentiator(object):
 
-    def __init__(self, binary_cutoff: int=200, default_method: str="Brauer"):
+    def __init__(
+        self,
+        binary_cutoff: int=200,
+        default_method: str="Brauer"
+    ):
         self.addition_chain_calculator = AdditionChainCalculator()
         self.binary_cutoff = binary_cutoff
         self.default_method = default_method
     
-    def __call__(self, obj, n: int, method: Optional[str]=None, binary_cutoff: Optional[int]=None):
+    def __call__(
+        self,
+        obj: Any,
+        n: int, method: Optional[str]=None,
+        binary_cutoff: Optional[int]=None
+    ) -> Any:
         """
         Calculates obj^n for positive n
         """

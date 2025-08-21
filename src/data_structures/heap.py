@@ -36,7 +36,10 @@ def siftDown(heap: List[int], i: int, length: int) -> None:
         i = mx[1]
     return
 
-def heapSort(nums: List[int], in_place: bool=True) -> Optional[List[int]]:
+def heapSort(
+    nums: List[int],
+    in_place: bool=True
+) -> Optional[List[int]]:
     n = len(nums)
     if not in_place:
         nums = list(nums)

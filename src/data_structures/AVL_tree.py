@@ -4,7 +4,11 @@ from typing import Any, Callable, Optional, Tuple, List, Dict, Set, Union
 
 class AVLTreeNode:
     # Based on https://www.geeksforgeeks.org/introduction-to-avl-tree/?ref=lbp
-    def __init__(self, val: Any, comp_func: Callable[[Any, Any], int]):
+    def __init__(
+        self,
+        val: Any,
+        comp_func: Callable[[Any, Any], int]
+    ):
         self.val = val
         self.comp_func = comp_func
         self.left = None
@@ -58,7 +62,10 @@ class AVLTreeNode:
         self.right = self.right.rightRotate()
         return self.leftRotate()
     
-    def insert(self, node: "AVLTreeNode") -> Tuple[Union["AVLTreeNode", bool]]:
+    def insert(
+        self,
+        node: "AVLTreeNode"
+    ) -> Tuple[Union["AVLTreeNode", bool]]:
         # Based on https://www.geeksforgeeks.org/insertion-in-an-avl-tree/
         v = self.comp_func(self.val, node.val)
         if not v:
@@ -88,7 +95,10 @@ class AVLTreeNode:
             return self.leftRotate(), True
         return self.rightLeftRotate(), True
     
-    def delete(self, val: Any) -> Tuple[Union["AVLTreeNode", bool]]:
+    def delete(
+        self,
+        val: Any
+    ) -> Tuple[Union["AVLTreeNode", bool]]:
         # Based on https://www.geeksforgeeks.org/deletion-in-an-avl-tree/
         v = self.comp_func(self.val, val)
         if not v:
@@ -153,7 +163,10 @@ def defaultComparisonFunction(val1: Any, val2: Any) -> int:
     return 0
 
 class AVLTree:
-    def __init__(self, comp_func: Optional[Callable[[Any, Any], int]]=None):
+    def __init__(
+        self,
+        comp_func: Optional[Callable[[Any, Any], int]]=None
+    ):
         self.comp_func = defaultComparisonFunction if comp_func is None\
                 else comp_func
         self.root = None

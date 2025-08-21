@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-from typing import List, Union, Tuple
+from typing import List, Union, Tuple, TYPE_CHECKING
 
 Real = Union[int, float]
 
@@ -277,15 +277,6 @@ def isqrt(n: int) -> int:
     if n < 0:
         raise ValueError("n must be non-negative")
     return integerNthRoot(n, 2)
-    """
-    # Newton's method
-    x2 = n
-    x1 = (n + 1) >> 1
-    while x1 < x2:
-        x2 = x1
-        x1 = (x2 + n // x2) >> 1
-    return x2
-    """
 
 def factorialPrimeFactorExponent(n: int, p: int) -> int:
     """
@@ -596,7 +587,7 @@ class CustomFraction:
     def __neg__(self) -> "CustomFraction":
         return CustomFraction(-self.numerator, self.denominator)
 
-    def __add__(self, other: Union["CustomFraction", int]) -> "CustomFraction":
+    def __add__(self, other: Union["CustomFraction", Real]) -> "CustomFraction":
         if isinstance(other, int):
             other = CustomFraction(other, 1)
         elif isinstance(other, float):
@@ -610,10 +601,10 @@ class CustomFraction:
         numer = (self.numerator * denom // self.denominator) + (other.numerator * denom // other.denominator) 
         return CustomFraction(numer, denom)
     
-    def __radd__(self, other: Union["CustomFraction", int]) -> "CustomFraction":
+    def __radd__(self, other: Union["CustomFraction", Real]) -> "CustomFraction":
         return self.__add__(other)
 
-    def __sub__(self, other: Union["CustomFraction", int]) -> "CustomFraction":
+    def __sub__(self, other: Union["CustomFraction", Real]) -> "CustomFraction":
         if isinstance(other, int):
             other = CustomFraction(other, 1)
         elif isinstance(other, float):
@@ -629,33 +620,33 @@ class CustomFraction:
         numer = (self.numerator * denom // self.denominator) - (other.numerator * denom // other.denominator) 
         return CustomFraction(numer, denom)
     
-    def __rsub__(self, other: Union["CustomFraction", int]) -> "CustomFraction":
+    def __rsub__(self, other: Union["CustomFraction", Real]) -> "CustomFraction":
         cp = CustomFraction(-self.numerator, self.denominator)
         return cp.__add__(other)
     
-    def __mul__(self, other: Union["CustomFraction", int]) -> "CustomFraction":
+    def __mul__(self, other: Union["CustomFraction", Real]) -> "CustomFraction":
         if isinstance(other, int):
             other = CustomFraction(other, 1)
         elif isinstance(other, float):
             return self.numerator / self.denominator * other
         return CustomFraction(self.numerator * other.numerator, self.denominator * other.denominator)
     
-    def __rmul__(self, other: Union["CustomFraction", int]) -> "CustomFraction":
+    def __rmul__(self, other: Union["CustomFraction", Real]) -> "CustomFraction":
         return self.__mul__(other)
 
-    def __truediv__(self, other: Union["CustomFraction", int]) -> "CustomFraction":
+    def __truediv__(self, other: Union["CustomFraction", Real]) -> "CustomFraction":
         if isinstance(other, int):
             other = CustomFraction(other, 1)
         elif isinstance(other, float):
             return self.numerator / (self.denominator * other)
         return CustomFraction(self.numerator * other.denominator, self.denominator * other.numerator)
     
-    def __rtruediv__(self, other: Union["CustomFraction", int]) -> "CustomFraction":
+    def __rtruediv__(self, other: Union["CustomFraction", Real]) -> "CustomFraction":
         res = self.__truediv__(other)
         cp = CustomFraction(self.denominator, self.numerator)
         return cp.__mul__(other)
     
-    def __lt__(self, other: Union["CustomFraction", int]) -> "CustomFraction":
+    def __lt__(self, other: Union["CustomFraction", Real]) -> "CustomFraction":
         if isinstance(other, int):
             other = CustomFraction(other, 1)
         elif isinstance(other, float):
@@ -663,14 +654,14 @@ class CustomFraction:
         elif not self.denominator and not other.denominator: return self.numerator < other.numerator
         return self.numerator * other.denominator < self.denominator * other.numerator
     
-    def __le__(self, other: Union["CustomFraction", int]) -> "CustomFraction":
+    def __le__(self, other: Union["CustomFraction", Real]) -> "CustomFraction":
         if isinstance(other, int):
             other = CustomFraction(other, 1)
         elif isinstance(other, float):
             return self.numerator <= self.denominator * other
         return self.numerator * other.denominator <= self.denominator * other.numerator
     
-    def __gt__(self, other: Union["CustomFraction", int]) -> "CustomFraction":
+    def __gt__(self, other: Union["CustomFraction", Real]) -> "CustomFraction":
         if isinstance(other, int):
             other = CustomFraction(other, 1)
         elif isinstance(other, float):
@@ -678,7 +669,7 @@ class CustomFraction:
         elif not self.denominator and not other.denominator: return self.numerator > other.numerator
         return self.numerator * other.denominator > self.denominator * other.numerator
     
-    def __ge__(self, other: Union["CustomFraction", int]) -> "CustomFraction":
+    def __ge__(self, other: Union["CustomFraction", Real]) -> "CustomFraction":
         if isinstance(other, int):
             other = CustomFraction(other, 1)
         elif isinstance(other, float):

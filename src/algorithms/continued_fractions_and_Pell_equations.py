@@ -1,41 +1,29 @@
 #! /usr/bin/env python
 
-from typing import Dict, List, Tuple, Set, Union, Generator, Callable, Optional, Any, Hashable, Iterable
+from typing import (
+    Dict,
+    List,
+    Tuple,
+    Set,
+    Union,
+    Generator,
+    Callable,
+    Optional,
+    Any,
+    Hashable,
+    Iterable,
+)
 
 import heapq
 import itertools
 import math
 
-def isqrt(n: int) -> int:
-    """
-    For a non-negative integer n, finds the largest integer m
-    such that m ** 2 <= n (or equivalently, the floor of the
-    positive square root of n).
-    Uses Newton's method.
-    
-    Args:
-        Required positional:
-        n (int): The number for which the above process is
-                performed.
-    
-    Returns:
-    Integer (int) giving the largest integer m such that
-    m ** 2 <= n.
-    
-    Examples:
-    >>> isqrt(4)
-    2
-    >>> isqrt(15)
-    3
-    """
-    x2 = n
-    x1 = (n + 1) >> 1
-    while x1 < x2:
-        x2 = x1
-        x1 = (x2 + n // x2) >> 1
-    return x2
+from algorithms.misc_mathematical_algorithms import isqrt
 
-def nthConvergent(n: int, cf_func: Callable[[int], int]) -> Tuple[int]:
+def nthConvergent(
+    n: int,
+    cf_func: Callable[[int], int]
+) -> Tuple[int]:
     """
     Finds the nth convergent of a given continued fraction
     representation of a non-negative number, with terms as
@@ -69,8 +57,9 @@ def nthConvergent(n: int, cf_func: Callable[[int], int]) -> Tuple[int]:
         res = (res[1] + cf_func(i) * res[0], res[0])
     return res
 
-def continuedFractionConvergentGenerator(continued_fraction_terms: Iterable[int])\
-        -> Generator[Tuple[int], None, None]:
+def continuedFractionConvergentGenerator(
+    continued_fraction_terms: Iterable[int]
+) -> Generator[Tuple[int], None, None]:
     """
     Generates the convergents in order of a given continued fraction
     representation of a non-negative number with terms as given in
@@ -123,70 +112,6 @@ def continuedFractionConvergentGenerator(continued_fraction_terms: Iterable[int]
         n += 1
     return
 
-"""
-def bestRationalApproximation(denom_max: int, continued_fraction_terms: Iterable[int])\
-        -> Tuple[int]:
-    ""
-    Finds the best rational approximation of the non-negative number
-    with the continued fraction whose terms are given by
-    continued_fraction_terms for the given maximum denominator
-    denom_max.
-
-    The best rational approximation of a non-negative number num
-    for a given maximum denominator denom_max is the unique fraction
-    p / q (where p and q are integers) such that q < denom_max and
-    for any integers p2, q2:
-        if abs(num - p2 / q2) < abs(num - p / q)
-        then q2 > denom_max.
-    
-    Args:
-        Required positional:
-        denom_max (int): Strictly positive integer giving the maximum
-                value of denominator the best rational approximation
-                may have when expressed as a fraction in lowest terms.
-        continued_fraction_terms (iterable): An ordered iterable
-                object containing integers representing the terms
-                in the continued fraction representation of the
-                non-negative number whose best rational approximation
-                for the given maximum denominator is to be found.
-                Note that the first term must be a non-negative integer.
-    
-    Returns:
-    2-tuple of integers (ints) giving the best rational approximation
-    of the number represented by continued_fraction_terms as a fraction
-    in lowest terms, where index 0 contains the numerator and index 1
-    the denominator.
-    
-    Outline of rationale:
-    See documentation for continuedFractionConvergentGenerator() and
-    https://shreevatsa.wordpress.com/2011/01/10/not-all-best-rational-approximations-are-the-convergents-of-the-continued-fraction/
-    ""
-    #print(denom_max, continued_fraction_terms)
-    it = iter(continued_fraction_terms)
-    a_0 = next(it)
-    curr = [(a_0, 1)]
-    a_1 = next(it)
-    if a_1 == -1: return (a_0, 1)
-    curr.append((a_1 * a_0 + 1, a_1))
-    a_n = a_1
-    n = 2
-    for a_n in it:
-        if a_n == -1: break
-        nxt = (a_n * curr[-1][0] + curr[-2][0],\
-                a_n * curr[-1][1] + curr[-2][1])
-        if nxt[1] > denom_max:
-            break
-        curr = [curr[1], nxt]
-        n += 1
-    else:
-        return curr[-1]
-    mult_max = (denom_max - curr[-2][1]) // curr[-1][1]
-    #print(mult_max, a_n)
-    if mult_max > (a_n >> 1):
-        return (mult_max * curr[-1][0] + curr[-2][0],\
-                mult_max * curr[-1][1] + curr[-2][1])
-    return curr[-1]
-"""
 def eContinuedFractionSequenceValue(i: int) -> int:
     """
     Gives the ith index (0-indexed) value of the continued fraction
@@ -204,7 +129,9 @@ def eContinuedFractionSequenceValue(i: int) -> int:
         return ((i // 3) + 1) << 1
     return 1 + (i == 0)
 
-def sqrtContinuedFractionRepresentation(num: int) -> Tuple[Union[Tuple[int], int]]:
+def sqrtContinuedFractionRepresentation(
+    num: int
+) -> Tuple[Union[Tuple[int], int]]:
     """
     Finds the continued fraction representation of the
     square root of num
@@ -274,7 +201,9 @@ def sqrtContinuedFractionTermValue(i: int, num: int) -> int:
     j = num_cf[1]
     return num_cf[0][j + (i - j) % (len(num_cf[0]) - j)]
 
-def sqrtContinuedFractionTermGenerator(num: int) -> Generator[int, None, None]:
+def sqrtContinuedFractionTermGenerator(
+    num: int
+) -> Generator[int, None, None]:
     """
     Generator yielding the terms of the continued fraction
     representation of the square root of num, for strictly
@@ -305,7 +234,9 @@ def sqrtContinuedFractionTermGenerator(num: int) -> Generator[int, None, None]:
         if i == n: i = num_cf[1]
     return
 
-def sqrtConvergentGenerator(num: int) -> Generator[Tuple[int, int], None, None]:
+def sqrtConvergentGenerator(
+    num: int
+) -> Generator[Tuple[int, int], None, None]:
     """
     Generator yielding the convergents of the square root of num,
     for strictly positive integers.
@@ -327,8 +258,10 @@ def sqrtConvergentGenerator(num: int) -> Generator[Tuple[int, int], None, None]:
     yield from continuedFractionConvergentGenerator(sqrtContinuedFractionTermGenerator(num))
     return
 
-def sqrtBestRationalApproximation(denom_max: int, num: int)\
-        -> Tuple[int]:
+def sqrtBestRationalApproximation(
+    denom_max: int,
+    num: int
+) -> Tuple[int]:
     """
     Finds the best rational approximation of the square root of
     a given non-negative number for the given maximum denominator
@@ -461,23 +394,11 @@ def pellFundamentalSolution(D: int) -> Tuple[int]:
         res2 = ((x ** 2 + D * y ** 2), (2 * x * y))
         return (res2, res)
     return (res, None)
-    """
-    # Solution checking every convergent in order
-    cf_func = lambda i: sqrtContinuedFractionRepresentationSequenceValue(i, D)
-    nth_convergent_func = lambda n: nthConvergent(n, cf_func)
-    
-    i = 1
-    while True:
-        x, y = nth_convergent_func(i)
-        #print(x, y, x ** 2 - D * y ** 2)
-        if x ** 2 - D * y ** 2 == 1:
-            return (x, y)
-        i += 1
-    return -1
-    """
 
-def pellSolutionGenerator(D: int, negative: bool=False)\
-        -> Generator[Tuple[int], None, None]:
+def pellSolutionGenerator(
+    D: int,
+    negative: bool=False
+) -> Generator[Tuple[int], None, None]:
     """
     Generator that yields the positive integer solutions to Pell's
     equation or Pell's negative equation:
@@ -548,8 +469,11 @@ def pellSolutionGenerator(D: int, negative: bool=False)\
 # this becomes very slow
 # Additionally, consider using congruences to identify cases with no
 # solution.
-def generalisedPellFundamentalSolutions(D: int, n: int,\
-        pell_basic_sol: Optional[Tuple[int]]=None) -> List[Tuple[int]]:
+def generalisedPellFundamentalSolutions(
+    D: int,
+    n: int,
+    pell_basic_sol: Optional[Tuple[int]]=None
+) -> List[Tuple[int]]:
     """
     Finds a fundamental solution set to the generalised Pell's equation
     (if they exist):
@@ -692,9 +616,11 @@ def generalisedPellFundamentalSolutions(D: int, n: int,\
     return [x for i, x in enumerate(res) if i not in excl_inds] if\
             excl_inds else res
 
-def generalisedPellSolutionGenerator(D: int, n: int,\
-        excl_trivial: bool=True)\
-        -> Generator[Tuple[int], None, None]:
+def generalisedPellSolutionGenerator(
+    D: int,
+    n: int,
+    excl_trivial: bool=True
+) -> Generator[Tuple[int], None, None]:
     """
     Generator that yields the solutions to the generalised Pell's
     equation:

@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 
-from typing import Tuple, List, Callable
+from typing import (
+    Tuple,
+    List,
+    Callable,
+    Any,
+)
 
 class FenwickTree:
     """
@@ -26,12 +31,16 @@ class FenwickTree:
              Example: Addition of integers (lambda x, y: x + y, 0)
             
     """
-    def __init__(self, n: int, op: tuple):
+    def __init__(
+        self,
+        n: int,
+        op: Tuple[Callable[[Any, Any], Any], Any]
+    ):
         self.n = n
         self.arr = [op[1]] * (n + 1)
         self.op = op
 
-    def query(self, i: int) -> int:
+    def query(self, i: int) -> Any:
         """
         Returns the cumulative application of the commutative,
         associative binary operation of the monoid on all elements
@@ -53,7 +62,7 @@ class FenwickTree:
             i -= i & -i
         return res
     
-    def update(self, i: int, v) -> None:
+    def update(self, i: int, v: Any) -> None:
         """
         Increments the ith element of the sequence (recall the sequence
         is zero-indexed)- i.e. the ith element will be replaced by

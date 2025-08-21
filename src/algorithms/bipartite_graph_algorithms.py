@@ -1,8 +1,14 @@
 #!/usr/bin/env python
 
-from typing import Generator, Dict, List, Set, Tuple, Optional, Union
-
-import time
+from typing import (
+    Generator,
+    Dict,
+    List,
+    Set,
+    Tuple,
+    Optional,
+    Union,
+)
 
 from collections import deque
 
@@ -258,7 +264,10 @@ def hopcroftKarpBinMatrix(bin_adj_matrix: List[List[int]])\
     return hopcroftKarpAdj(\
             *binMatrix2UnweightedBipartiteAdj(bin_adj_matrix))
 
-def fordFulkerson(graph: List[Dict[int, Union[int, float]]], start: int, end: int) -> Union[int, float]:
+def fordFulkerson(
+    graph: List[Dict[int, Union[int, float]]],
+    start: int, end: int
+) -> Union[int, float]:
     eps = 10 ** -5
 
     graph = [dict(x) for x in graph] # deep copy of graph

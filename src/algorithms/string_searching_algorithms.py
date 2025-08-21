@@ -1,8 +1,17 @@
 #!/usr/bin/env python
 
-from typing import Dict, Generator, List, Tuple, Optional, Union,\
-        Callable, Any, Hashable
-from collections.abc import Iterable
+from typing import (
+    Dict,
+    Generator,
+    List,
+    Tuple,
+    Optional,
+    Union,
+    Callable,
+    Any,
+    Hashable,
+    Iterable,
+)
 
 import heapq
 import itertools
@@ -242,7 +251,7 @@ class ZAlgorithm:
             self._pattern = res
         return res
     
-    def constructZArray(self, s: List[Any]) -> List[int]:
+    def constructZArray(self, s: Iterable[Any]) -> List[int]:
         """
         Constructs the Z array for the finite ordered iterable object
         s.
@@ -349,13 +358,18 @@ class ZAlgorithm:
         return
 
 
-def rollingHash(s: Iterable[Any], length: int, p_lst: Union[Tuple[int], List[int]]=(37, 53),
-        md: int=10 ** 9 + 7, func: Optional[Callable[[Any], int]]=None) -> Generator[Tuple[int], None, None]:
+def rollingHash(
+    s: Iterable[Any],
+    length: int,
+    p_lst: Union[Tuple[int], List[int]]=(37, 53),
+    md: int=10 ** 9 + 7,
+    encoding_func: Optional[Callable[[Any], int]]=None,
+) -> Generator[Tuple[int], None, None]:
     """
     Generator that yields the rolling hash values of each contiguous subsequence of
     the iterable s with length elements in order of their first element. The hash
     is polynomial-based around prime numbers as specified in p_lst modulo md.
-    The elements of s are passed through the function func which transforms
+    The elements of s are passed through the function encoding_func which transforms
     each possible input value into a distinct integer (by default, the identity
     if the elements of s are integers, and the ord() function if they are
     string characters).
@@ -369,7 +383,7 @@ def rollingHash(s: Iterable[Any], length: int, p_lst: Union[Tuple[int], List[int
     prime list of length n (p1, p2, ..., pn) and a 0-indexed string s with length
     of no less than (i + l), the (i + 1)th value yielded by the evaluation
     of:
-        rollingHash(s, l, p_lst=(p1, p2), md=md, func=ord)
+        rollingHash(s, l, p_lst=(p1, p2), md=md, encoding_func=ord)
     is equal to the n-tuple of integers:
         ((ord(s[i]) * p1^(l - 1) + ord(s[i + 1]) * p1^(l - 2) + ... + ord(s[i + l - 2]) * p1 + ord(s[i + l - 1])) % md,
         (ord(s[i]) * p2^(l - 1) + ord(s[i + 1]) * p2^(l - 2) + ... + ord(s[i + l - 2]) * p2 + ord(s[i + l - 1])) % md,
@@ -398,7 +412,7 @@ def rollingHash(s: Iterable[Any], length: int, p_lst: Union[Tuple[int], List[int
                 its remainder to this modulus). For best results, this
                 should be a prime number, and the larger the number
                 the less likely hash collisions are to occur (see p_lst).
-        func (callable): A function taking in an element of s and
+        encoding_func (callable): A function taking in an element of s and
                 returning an integer, or for integer or string sequences
                 None can be given (for integer sequences, the value is
                 used directly, and for strings, the ASCII code number is
@@ -415,7 +429,7 @@ def rollingHash(s: Iterable[Any], length: int, p_lst: Union[Tuple[int], List[int
     p_lst[j] and the modulus md, as calculated above, for the contiguous
     subsequence of s between indices i and (i + length - 1) inclusive,
     where each element has been converted into an integer by the function
-    func.
+    encoding_func.
     The number of results yielded by the generator is one more than the
     number of elements in s minus length as long as this is positive,
     otherwise there are no yielded results
@@ -425,18 +439,18 @@ def rollingHash(s: Iterable[Any], length: int, p_lst: Union[Tuple[int], List[int
     """
     if hasattr(s, "__len__") and len(s) < length:
         return
-    if func is None:
-        try: val = func(next(iter_obj))
+    if encoding_func is None:
+        try: val = encoding_func(next(iter_obj))
         except StopIteration: return
         if isinstance(next(iter(s), str)):
-            func = ord#lambda x: ord(x)
-        else: func = lambda x: x
+            encoding_func = ord#lambda x: ord(x)
+        else: encoding_func = lambda x: x
     iter_obj = iter(s)
     n_p = len(p_lst)
     hsh = [0] * n_p
     val_qu = deque()
     for i in range(length):
-        try: val = func(next(iter_obj))
+        try: val = encoding_func(next(iter_obj))
         except StopIteration: return
         val_qu.append(val)
         for j, p in enumerate(p_lst):
@@ -444,7 +458,7 @@ def rollingHash(s: Iterable[Any], length: int, p_lst: Union[Tuple[int], List[int
     yield tuple(hsh)
     mults = [pow(p, length - 1, md) for p in p_lst]
     for i in itertools.count(length):
-        try: val = func(next(iter_obj))
+        try: val = encoding_func(next(iter_obj))
         except StopIteration: return
         val_qu.append(val)
         val2 = val_qu.popleft()
@@ -453,13 +467,18 @@ def rollingHash(s: Iterable[Any], length: int, p_lst: Union[Tuple[int], List[int
         yield tuple(hsh)
     return
 
-def rollingHashWithValue(s: Iterable[Any], length: int, p_lst: Union[Tuple[int], List[int]]=(37, 53),
-        md: int=10 ** 9 + 7, func: Optional[Callable[[Any], int]]=None) -> Generator[Tuple[Any, Tuple[int]], None, None]:
+def rollingHashWithValue(
+    s: Iterable[Any],
+    length: int,
+    p_lst: Union[Tuple[int], List[int]]=(37, 53),
+    md: int=10 ** 9 + 7,
+    encoding_func: Optional[Callable[[Any], int]]=None
+) -> Generator[Tuple[Any, Tuple[int]], None, None]:
     """
     Generator that yields the rolling hash values of each contiguous subsequence of
     the iterable s with length elements in order of their first element. The hash
     is polynomial-based around prime numbers as specified in p_lst modulo md.
-    The elements of s are passed through the function func which transforms
+    The elements of s are passed through the function encoding_func which transforms
     each possible input value into a distinct integer (by default, the identity
     if the elements of s are integers, and the ord() function if they are
     string characters).
@@ -473,7 +492,7 @@ def rollingHashWithValue(s: Iterable[Any], length: int, p_lst: Union[Tuple[int],
     prime list of length n (p1, p2, ..., pn) and a 0-indexed string s with length
     of no less than (i + l), the (i + 1)th value yielded by the evaluation
     of:
-        rollingHash(s, l, p_lst=(p1, p2), md=md, func=ord)
+        rollingHash(s, l, p_lst=(p1, p2), md=md, encoding_func=ord)
     is equal to the n-tuple of integers:
         ((ord(s[i]) * p1^(l - 1) + ord(s[i + 1]) * p1^(l - 2) + ... + ord(s[i + l - 2]) * p1 + ord(s[i + l - 1])) % md,
         (ord(s[i]) * p2^(l - 1) + ord(s[i + 1]) * p2^(l - 2) + ... + ord(s[i + l - 2]) * p2 + ord(s[i + l - 1])) % md,
@@ -502,7 +521,7 @@ def rollingHashWithValue(s: Iterable[Any], length: int, p_lst: Union[Tuple[int],
                 its remainder to this modulus). For best results, this
                 should be a prime number, and the larger the number
                 the less likely hash collisions are to occur (see p_lst).
-        func (callable): A function taking in an element of s and
+        encoding_func (callable): A function taking in an element of s and
                 returning an integer, or for integer or string sequences
                 None can be given (for integer sequences, the value is
                 used directly, and for strings, the ASCII code number is
@@ -519,7 +538,7 @@ def rollingHashWithValue(s: Iterable[Any], length: int, p_lst: Union[Tuple[int],
     p_lst[j] and the modulus md, as calculated above, for the contiguous
     subsequence of s between indices i and (i + length - 1) inclusive,
     where each element has been converted into an integer by the function
-    func.
+    encoding_func.
     The number of results yielded by the generator is one more than the
     number of elements in s minus length as long as this is positive,
     otherwise there are no yielded results
@@ -529,12 +548,12 @@ def rollingHashWithValue(s: Iterable[Any], length: int, p_lst: Union[Tuple[int],
     """
     if hasattr(s, "__len__") and len(s) < length:
         return
-    if func is None:
-        try: val = func(next(iter_obj))
+    if encoding_func is None:
+        try: val = encoding_func(next(iter_obj))
         except StopIteration: return
         if isinstance(next(iter(s), str)):
-            func = ord#lambda x: ord(x)
-        else: func = lambda x: x
+            encoding_func = ord#lambda x: ord(x)
+        else: encoding_func = lambda x: x
     iter_obj = iter(s)
     n_p = len(p_lst)
     hsh = [0] * n_p
@@ -542,14 +561,14 @@ def rollingHashWithValue(s: Iterable[Any], length: int, p_lst: Union[Tuple[int],
     for i in range(length - 1):
         try: l = next(iter_obj)
         except StopIteration: return
-        val = func(l)
+        val = encoding_func(l)
         val_qu.append(val)
         for j, p in enumerate(p_lst):
             hsh[j] = (hsh[j] * p + val) % md
         yield (l, None)
     try: l = next(iter_obj)
     except StopIteration: return
-    val = func(l)
+    val = encoding_func(l)
     val_qu.append(val)
     for j, p in enumerate(p_lst):
         hsh[j] = (hsh[j] * p + val) % md
@@ -558,7 +577,7 @@ def rollingHashWithValue(s: Iterable[Any], length: int, p_lst: Union[Tuple[int],
     for i in itertools.count(length):
         try: l = next(iter_obj)
         except StopIteration: return
-        val = func(l)
+        val = encoding_func(l)
         val_qu.append(val)
         val2 = val_qu.popleft()
         for j, p in enumerate(p_lst):
@@ -567,25 +586,29 @@ def rollingHashWithValue(s: Iterable[Any], length: int, p_lst: Union[Tuple[int],
     return
 
 
-def rollingHashSearch(s: str, patterns: List[str],
-        p_lst: Optional[Union[List[int], Tuple[int]]]=(31, 37),
-        md: int=10 ** 9 + 7,
-        check: bool=True) -> Dict[str, List[int]]:
+def rollingHashSearch(
+    s: Iterable[Any],
+    patterns: List[Iterable[Any]],
+    p_lst: Optional[Union[List[int], Tuple[int]]]=(31, 37),
+    md: int=10 ** 9 + 7,
+    check: bool=True
+) -> Dict[str, List[int]]:
     """
-    Performs a rolling hash search on the string s to find the starting
-    indices of all occurrences of contiguous substrings that match one
-    of the the strings in patterns (even if those occurrences overlap with
+    Performs a rolling hash search on the ordered iterable object s to
+    find the starting indices of all occurrences of contiguous ordered
+    sub-iterable object that exactly match one of the finite ordered
+    iterable objects in patterns (even if those occurrences overlap with
     each other in s).
     For details regarding the calculation of the rolling hash, see
     rollingHash().
-    This is best suited for cases where many of the pattern strings in
+    This is best suited for cases where many of the objects in
     patterns share lengths.
 
     Args:
         Required positional:
-        s (str): The string to be searched
-        patterns (list of str): List of strings whose starting indices
-                in s are to be found.
+        s (iterable): The ordered iterable object to be searched
+        patterns (list of str): List of finite ordered iterable objects
+                whose starting indices in s are to be found.
         
         
         p_lst (list/tuple of ints): A list of distinct prime numbers to be
@@ -601,7 +624,7 @@ def rollingHashSearch(s: str, patterns: List[str],
                 number.
             Default: 10 ** 9 + 7
         check (bool): Whether in the event of a hash match with a single
-                matching hash for one of the pattern strings of the
+                matching hash for one of the elements of patterns of the
                 correct length, a check is performed to rule out a
                 hash collision, otherwise the match is assumed to be
                 correct (note that by increasing the value of md, and
@@ -616,9 +639,9 @@ def rollingHashSearch(s: str, patterns: List[str],
     
     Returns:
     Dictionary (dict) whose keys are the elements of patterns present as
-    a contiguous substring of s, and whose corresponding values are a
-    list of the (0-indexed) indices of s at which the contiguous substrings
-    that element of patterns start, in increasing order.
+    a contiguous sub-iterable object of s, and whose corresponding values are a
+    list of the (0-indexed) indices of s at which the contiguous sub-iterable
+    objects that element of patterns start, in increasing order.
     """
     #ord_A = ord("A")
     def char2num(l: str) -> int:
@@ -645,7 +668,10 @@ def rollingHashSearch(s: str, patterns: List[str],
             res[pattern].append(i)
     return res
 
-def findRepeatedDnaSequences(s: str, substring_length: int=10) -> List[str]:
+def findRepeatedDnaSequences(
+    s: str,
+    substring_length: int=10
+) -> List[str]:
     """
     For a string s representing a DNA sequence consisting exclusively of
     the characters "A", "C", "G" and "T", finds the set of contiguous
@@ -726,7 +752,7 @@ def findRepeatedDnaSequences(s: str, substring_length: int=10) -> List[str]:
     p_lst = (31, 37)
     hsh_dict = {}
     res = []
-    for i, hsh in enumerate(rollingHash(s, substring_length, p_lst=(31, 37), md=md, func=char2num)):
+    for i, hsh in enumerate(rollingHash(s, substring_length, p_lst=p_lst, md=md, func=char2num)):
         if hsh in hsh_dict.keys():
             if not hsh_dict[hsh]:
                 res.append(s[i: i + substring_length])
@@ -859,13 +885,17 @@ class AhoCorasick:
             j = self.failure[j]
         return self.goto[j].get(l, 0)
     
-    def search(self, s: Iterable[Hashable]) -> Dict[int, List[int]]:
+    def search(
+        self,
+        s: Iterable[Hashable]
+    ) -> Dict[int, List[int]]:
         """
         Gives dictionary for the starting index of each occurrence
         of each element of the attribute words as a contiguous
         subsequence in the finite ordered iterable object s.
 
         Args:
+            Required positional:
             s (iterable object): The finite ordered iterable object
                     with hashable elements being searched.
         
@@ -890,13 +920,17 @@ class AhoCorasick:
                 bm >>= 1
         return res
     
-    def searchEndIndices(self, s: Iterable[Hashable]) -> Generator[Tuple[int, List[int]], None, None]:
+    def searchEndIndices(
+        self,
+        s: Iterable[Hashable]
+    ) -> Generator[Tuple[int, List[int]], None, None]:
         """
         Generator yielding a 2-tuple of each index of s (in ascending order)
         and a list of the corresponding indies of the patterns in self.words
         that have a match in s that ends exactly at that index of s.
 
         Args:
+            Required positional:
             s (iterable object): The finite ordered iterable object
                     with hashable elements being searched.
         
@@ -923,13 +957,17 @@ class AhoCorasick:
             yield (i, res)
         return
 
-    def searchLengths(self, s: Iterable[Hashable]) -> Generator[Tuple[int], None, None]:
+    def searchLengths(
+        self,
+        s: Iterable[Hashable]
+    ) -> Generator[Tuple[int], None, None]:
         """
         Generator yielding a 2-tuple of each index of s (in ascending order)
         and a list of the lengths of the patterns in self.words that have a
         match in s that ends exactly at that index of s.
 
         Args:
+            Required positional:
             s (iterable object): The finite ordered iterable object
                     with hashable elements being searched.
         
@@ -1090,7 +1128,7 @@ def wordBreak2(s: str, wordDict: List[str]) -> List[str]:
                 dp[i].append(" ".join([s2, w]))
     return dp[-1]
 
-def addBoldTag(self, s: str, words: List[str]) -> str:
+def addBoldTag(s: str, words: List[str]) -> str:
     """
     Solution to Leetcode #616 and #758 (both Premium) using Aho Corasick
     """
