@@ -12,30 +12,7 @@ from typing import (
 import bisect
 import time
 
-def IntegerPartitionGenerator(
-    n: int,
-    min_n_part: int=0,
-    max_n_part: Optional[int]=None,
-    min_part_size: int=1,
-    balanced_first: bool=True
-):
-    mx = n if max_n_part is None else max_n_part
-    mn = min_n_part
-    if mx == 0 and n == 0:
-        if mn == 0: yield []
-        return
-    if mx <= 0 or n < min_part_size: return
-    if mx == 1:
-        if mn <= 1: yield [n]
-        return
-    if mn <= 1 and balanced_first: yield [n]
-    iter_obj = range(min_part_size, n - min_part_size + 1)
-    if balanced_first: iter_obj = reversed(iter_obj)
-    for i in iter_obj:
-        for part in IntegerPartitionGenerator(n - i, max(mn - 1, 0), mx - 1, i):
-            yield [i, *part]
-    if mn <= 1 and not balanced_first: yield [n]
-    return
+from algorithms.misc_mathematical_algorithms import IntegerPartitionGenerator
 
 class AdditionChainCalculator(object):
 

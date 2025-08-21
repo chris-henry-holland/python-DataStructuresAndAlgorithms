@@ -1,6 +1,11 @@
 #! /usr/bin/env python
 
-from typing import List, Union, Tuple, TYPE_CHECKING
+from typing import (
+    List,
+    Union,
+    Tuple,
+    Optional,
+)
 
 Real = Union[int, float]
 
@@ -277,6 +282,31 @@ def isqrt(n: int) -> int:
     if n < 0:
         raise ValueError("n must be non-negative")
     return integerNthRoot(n, 2)
+
+def IntegerPartitionGenerator(
+    n: int,
+    min_n_part: int=0,
+    max_n_part: Optional[int]=None,
+    min_part_size: int=1,
+    balanced_first: bool=True
+):
+    mx = n if max_n_part is None else max_n_part
+    mn = min_n_part
+    if mx == 0 and n == 0:
+        if mn == 0: yield []
+        return
+    if mx <= 0 or n < min_part_size: return
+    if mx == 1:
+        if mn <= 1: yield [n]
+        return
+    if mn <= 1 and balanced_first: yield [n]
+    iter_obj = range(min_part_size, n - min_part_size + 1)
+    if balanced_first: iter_obj = reversed(iter_obj)
+    for i in iter_obj:
+        for part in IntegerPartitionGenerator(n - i, max(mn - 1, 0), mx - 1, i):
+            yield [i, *part]
+    if mn <= 1 and not balanced_first: yield [n]
+    return
 
 def factorialPrimeFactorExponent(n: int, p: int) -> int:
     """
