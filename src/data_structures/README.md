@@ -7,6 +7,6 @@ Currently includes:
 - prime_sieves.py- Defines a class based around a prime sieve (Sieve of Eratosthenes) recording the smallest prime factor of each integer, with methods that use this prime sieve to perform calculations including prime factorisation, finding all possible factorisations not including 1 as a factor, generating primes and evaluating the prime counting function.
 - segment_tree.py- Implementation of segment tree data structure.
 
-These are intended for revision and reference.
+These are intended for revision, reference and for use in my other Python projects.
 
-Written using Python 3.6.
+Written using Python 3.11.

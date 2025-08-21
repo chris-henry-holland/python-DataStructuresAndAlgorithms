@@ -7,6 +7,6 @@ Currently includes:
 - random_selection_algorithms.py- Currently only includes an algorithm for uniformly randomly selecting a subset of a range of integers
 - string_searching_algorithms.py- Implementation of standard string searching algorithms including KMP, Z-algorithm, Aho-Corasick and rolling hash
 
-These are intended for revision and reference.
+These are intended for revision, reference and for use in my other Python projects.
 
-Written using Python 3.6.
+Written using Python 3.11.
