@@ -1,6 +1,9 @@
 #! /usr/bin/env python
 
-from typing import Dict, List, Tuple, Set, Union, Generator, Callable, Optional, Any, Hashable, Iterable
+from typing import (
+    Tuple,
+    Generator,
+)
 
 from collections import deque
 

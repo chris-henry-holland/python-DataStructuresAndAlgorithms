@@ -25,7 +25,7 @@ License: MIT License
         OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
         SOFTWARE.
         
-Project-URL: Code, https://github.com/chris-henry-holland/python-DataStructuresAndAlgorithms
+Project-URL: Repository, https://github.com/chris-henry-holland/python-DataStructuresAndAlgorithms.git
 Keywords: python,data structure,algorithm,mathematics,prime sieve,geometry,convex hull,graph,tree,heap,segment tree,Fenwick tree,binary indexed tree,suffix array,string searching
 Classifier: License :: OSI Approved :: MIT License
 Classifier: Programming Language :: Python

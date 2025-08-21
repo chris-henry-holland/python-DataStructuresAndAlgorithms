@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
-from typing import List, Optional
+from typing import (
+    List,
+    Optional,
+)
 
 def maxHeapify(heap: List[int]) -> None:
     """
