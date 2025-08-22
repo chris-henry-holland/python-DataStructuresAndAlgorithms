@@ -1,6 +1,7 @@
 LICENSE
 README.md
 pyproject.toml
+src/data_structures_and_algorithms/__init__.py
 src/data_structures_and_algorithms.egg-info/PKG-INFO
 src/data_structures_and_algorithms.egg-info/SOURCES.txt
 src/data_structures_and_algorithms.egg-info/dependency_links.txt
