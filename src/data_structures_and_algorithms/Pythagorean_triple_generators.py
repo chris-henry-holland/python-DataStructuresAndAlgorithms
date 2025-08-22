@@ -9,7 +9,7 @@ from typing import (
 import heapq
 import itertools
 
-from data_structures_and_algorithms.algorithms.number_theory_algorithms import isqrt, gcd
+from data_structures_and_algorithms.number_theory_algorithms import isqrt, gcd
 
 def pythagoreanTripleGeneratorByHypotenuse(
     primitive_only: bool=False,

@@ -7,8 +7,8 @@ import math
 import random
 from sortedcontainers import SortedList
 
-from data_structures_and_algorithms.algorithms.number_theory_algorithms import gcd
-from data_structures_and_algorithms.data_structures.fractions import CustomFraction
+from data_structures_and_algorithms.number_theory_algorithms import gcd
+from data_structures_and_algorithms.fractions import CustomFraction
 
 def determinant(
     mat: List[List[Union[int, float]]]

@@ -9,7 +9,7 @@ from typing import (
 import bisect
 import time
 
-from data_structures_and_algorithms.algorithms.number_theory_algorithms import IntegerPartitionGenerator
+from data_structures_and_algorithms.number_theory_algorithms import IntegerPartitionGenerator
 
 class AdditionChainCalculator(object):
 

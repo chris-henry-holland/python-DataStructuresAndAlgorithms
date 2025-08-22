@@ -16,7 +16,7 @@ import itertools
 import random
 import time
 
-from data_structures_and_algorithms.algorithms.number_theory_algorithms import isqrt
+from data_structures_and_algorithms.number_theory_algorithms import isqrt
 
 Real = Union[int, float]
 
