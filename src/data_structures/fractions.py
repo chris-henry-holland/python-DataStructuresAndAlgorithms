@@ -6,7 +6,7 @@ from typing import (
     Union,
 )
 
-from data_structures_and_algorithms.number_theory_algorithms import (
+from algorithms.number_theory_algorithms import (
     gcd,
     lcm,
 )

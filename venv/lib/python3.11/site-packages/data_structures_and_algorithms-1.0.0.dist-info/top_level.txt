@@ -1,1 +1,2 @@
-data_structures_and_algorithms
+algorithms
+data_structures

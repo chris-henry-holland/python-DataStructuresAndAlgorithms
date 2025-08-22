@@ -33,7 +33,7 @@ end
 # Unset irrelevant variables.
 deactivate nondestructive
 
-set -gx VIRTUAL_ENV "/home/chris/Coding_projects/Github/chris-henry-holland/Python/DataStructuresAndAlgorithms/python-DataStructuresAndAlgorithms/venv"
+set -gx VIRTUAL_ENV "/home/chris/Coding_projects/Github/chris-henry-holland/Python/DataStructuresAndAlgorithms/python-DataStructuresAndAlgorithms/python-DataStructuresAndAlgorithms/venv"
 
 set -gx _OLD_VIRTUAL_PATH $PATH
 set -gx PATH "$VIRTUAL_ENV/bin" $PATH

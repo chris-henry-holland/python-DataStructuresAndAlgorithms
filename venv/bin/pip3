@@ -1,5 +1,5 @@
 #!/bin/sh
-'''exec' /home/chris/Coding_projects/Github/chris-henry-holland/Python/DataStructuresAndAlgorithms/python-DataStructuresAndAlgorithms/venv/bin/python "$0" "$@"
+'''exec' /home/chris/Coding_projects/Github/chris-henry-holland/Python/DataStructuresAndAlgorithms/python-DataStructuresAndAlgorithms/python-DataStructuresAndAlgorithms/venv/bin/python "$0" "$@"
 ' '''
 # -*- coding: utf-8 -*-
 import re

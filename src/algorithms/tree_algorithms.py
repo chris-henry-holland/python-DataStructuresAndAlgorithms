@@ -11,7 +11,6 @@ from typing import (
 
 from collections import deque, Counter
 
-
 def findCentralNodes(
     graph: List[Set[int]],
     preserve_graph: bool=True,

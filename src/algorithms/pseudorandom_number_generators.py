@@ -7,8 +7,6 @@ from typing import (
 
 from collections import deque
 
-
-
 def generalisedLaggedFibonacciGenerator(
     poly_coeffs: Tuple[int]=(100003, -200003, 0, 300007),
     lags: Tuple[int]=(24, 55),
