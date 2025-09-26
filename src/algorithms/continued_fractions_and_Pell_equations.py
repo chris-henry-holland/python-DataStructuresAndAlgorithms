@@ -583,11 +583,12 @@ def generalisedPellFundamentalSolutions(
     x0, y0 = [abs(x) for x in pell_basic_sol]
     u = abs_val_func((x0, y0))
     u_sqrt = math.sqrt(u)
+    y_lb = isqrt((-n) // D - 1) + 1 if n < 0 else 0
     y_ub = math.floor(math.sqrt(abs(n)) * (u_sqrt + 1 / u_sqrt) /\
             (2 * math.sqrt(D)))
     #print(f"y upper bound = {y_ub}")
     res = []
-    for y in range(y_ub + 1):
+    for y in range(y_lb, y_ub + 1):
         x_sq = n + D * y ** 2
         x = isqrt(x_sq)
         if x ** 2 == x_sq:

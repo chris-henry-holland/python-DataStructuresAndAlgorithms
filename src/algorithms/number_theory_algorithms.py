@@ -290,7 +290,7 @@ def IntegerPartitionGenerator(
     min_n_part: int=0,
     max_n_part: Optional[int]=None,
     min_part_size: int=1,
-    balanced_first: bool=True
+    balanced_first: bool=True,
 ):
     mx = n if max_n_part is None else max_n_part
     mn = min_n_part
