@@ -130,7 +130,7 @@ def eContinuedFractionSequenceValue(i: int) -> int:
     return 1 + (i == 0)
 
 def sqrtContinuedFractionRepresentation(
-    num: int
+    num: int,
 ) -> Tuple[Union[Tuple[int], int]]:
     """
     Finds the continued fraction representation of the

@@ -523,6 +523,25 @@ class PrimeSPFsieve(object):
                 return False
         return True
 
+    def getSmallestPrimeFactor(self, n: int) -> int:
+        """
+        Gives the smallest prime factor of a strictly positive integer.
+        Accomplishes this using the sieve (so will extend the sieve
+        to that number if not already covering that number).
+
+        Args:
+            Required positional:
+            n (int): The strictly positive integer whose smallest
+                    prime factor is to be found.
+        
+        Returns:
+        Integer (int) giving the smallest prime factor of n if n
+        is greater than 1, otherwise -1 (signifying that the
+        number has no prime factors).
+        """
+        self.extendSieve(n)
+        return self.sieve[n][2]
+
     def primeFactors(self, n: int) -> List[int]:
         """
         Gives the prime factors of a strictly positive integer
