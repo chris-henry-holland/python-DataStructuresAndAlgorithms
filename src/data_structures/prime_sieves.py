@@ -540,7 +540,7 @@ class PrimeSPFsieve(object):
         number has no prime factors).
         """
         self.extendSieve(n)
-        return self.sieve[n][2]
+        return self.sieve[n][0]
 
     def primeFactors(self, n: int) -> List[int]:
         """
