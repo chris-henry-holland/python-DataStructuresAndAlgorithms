@@ -155,6 +155,39 @@ def solveLinearCongruence(a: int, b: int, md: int) -> int:
     q, r = divmod(b, g)
     return -1 if r else (q * m) % md
 
+def solveLinearNonHomogeneousDiophantineEquation(
+    a: int,
+    b: int,
+    c: int,
+) -> Tuple[int]:
+    """
+    Finds the general solution for integers x and y in the equation:
+        a * x + b * y = c
+    for integers a, b, c where a and b are non-zero, if such a solution
+    exists
+    
+    Args:
+        Required positional:
+        a (int): The coefficient of x in the equation. Must be non-zero.
+        b (int): The coefficient of y in the equation. Must be non-zero.
+        c (int): The value on the right hand side of the equation
+    
+    Returns:
+    4-tuple of ints if a solution exists, otherwise an empty tuple.
+    The general solution is of the form:
+        x = dx * k + x0, y = dy * k + y0
+    for integers dx, x0, dy, y0 and k can take any integer value.
+    Any solution of the equation for integer x, y is of this form.
+    In terms of these integers, the returned 4-tuple is:
+        (dx, x0, dy, y)
+    """
+    if not a or not b: raise ValueError("a and b must be non-zero")
+    g = gcd(a, b)
+    if c % g: return ()
+    a, b, c = (a // g, b // g, c // g)
+    x, y, _ = extendedEuclideanAlgorithm(a, b)
+    return (b, x * c, -a, y * c)
+
 def nthRoot(a: Real, b: int, eps: Real=1e-5) -> Real:
     """
     Finds the non-negative real b:th root of a (a^(1/b)) to a given
