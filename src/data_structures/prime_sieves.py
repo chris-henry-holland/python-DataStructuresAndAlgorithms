@@ -49,9 +49,10 @@ class SimplePrimeSieve(object):
         use_p_lst: bool=True,
     ):
         if n_max is None: n_max = 3
+        self.n_max = n_max
         self.use_p_lst = use_p_lst
         self.initialiseSieve()
-        self.extendSieve(self._max)
+        self.extendSieve(self.n_max)
     
     def initialiseSieve(self) -> None:
         self.sieve = [False, False, True, True]
