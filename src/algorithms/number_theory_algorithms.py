@@ -318,6 +318,28 @@ def isqrt(n: int) -> int:
         raise ValueError("n must be non-negative")
     return integerNthRoot(n, 2)
 
+def floorHarmonicSeries(n: int) -> int:
+    """
+    Calculates the value of the sum:
+        (sum i from 1 to n) floor(n / i)
+    using the identity that:
+        (sum i from 1 to n) floor(n / i) = ((sum i from 1 to k) floor(n / i)) - k ** 2
+    where k = floor(sqrt(n))
+    
+    Args:
+        Required positional:
+        n (int): Strictly positive integer giving the value
+                for which the value of the above formula is
+                to be calculated.
+    
+    Returns:
+    Integer (int) giving the value of:
+        sum (i from 1 to n) floor(n / i)
+    for the given value of n.
+    """
+    k = isqrt(n)
+    return sum(n // i for i in range(1, k + 1)) - k ** 2
+
 def IntegerPartitionGenerator(
     n: int,
     min_n_part: int=0,
