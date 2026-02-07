@@ -5,6 +5,7 @@ src/algorithms/Pythagorean_triple_generators.py
 src/algorithms/array_algorithms.py
 src/algorithms/bipartite_graph_algorithms.py
 src/algorithms/continued_fractions_and_Pell_equations.py
+src/algorithms/farey_sequences.py
 src/algorithms/geometry_algorithms.py
 src/algorithms/graph_algorithms.py
 src/algorithms/number_theory_algorithms.py
