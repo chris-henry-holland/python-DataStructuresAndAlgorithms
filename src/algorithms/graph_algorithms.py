@@ -19,6 +19,31 @@ from collections import deque
 
 Real = Union[int, float]
 
+class UnionFind:
+    def __init__(self, n: int):
+        self.n = n
+        self.root = list(range(n))
+        self.rank = [1] * n
+    
+    def find(self, i: int) -> int:
+        r = self.root[i]
+        if r == i: return i
+        res = self.find(r)
+        self.root[i] = res
+        return res
+    
+    def union(self, i1: int, i2: int) -> None:
+        r1, r2 = list(map(self.find, (i1, i2)))
+        if r1 == r2: return
+        d = self.rank[r1] - self.rank[r2]
+        if d < 0: r1, r2 = r2, r1
+        elif not d: self.rank[r1] += 1
+        self.root[r2] = r1
+        return
+    
+    def connected(self, i1: int, i2: int) -> bool:
+        return self.find(i1) == self.find(i2)
+
 def hierholzerAlgorithm(
     edges: List[list],
     start=None,
