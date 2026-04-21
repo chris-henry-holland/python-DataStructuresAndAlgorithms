@@ -159,7 +159,7 @@ def solveLinearNonHomogeneousDiophantineEquation(
     a: int,
     b: int,
     c: int,
-) -> Tuple[int]:
+) -> Optional[Tuple[int, int, int, int]]:
     """
     Finds the general solution for integers x and y in the equation:
         a * x + b * y = c
@@ -173,7 +173,7 @@ def solveLinearNonHomogeneousDiophantineEquation(
         c (int): The value on the right hand side of the equation
     
     Returns:
-    4-tuple of ints if a solution exists, otherwise an empty tuple.
+    4-tuple of ints if a solution exists, otherwise None.
     The general solution is of the form:
         x = dx * k + x0, y = dy * k + y0
     for integers dx, x0, dy, y0 and k can take any integer value.
@@ -185,7 +185,7 @@ def solveLinearNonHomogeneousDiophantineEquation(
     g = gcd(a, b)
     if c % g: return ()
     a, b, c = (a // g, b // g, c // g)
-    x, y, _ = extendedEuclideanAlgorithm(a, b)
+    x, y = extendedEuclideanAlgorithm(a, b)[1]
     return (b, x * c, -a, y * c)
 
 def nthRoot(a: Real, b: int, eps: Real=1e-5) -> Real:
