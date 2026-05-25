@@ -272,34 +272,42 @@ class SegmentTreeWithLazyPropogation(object):
                 The standard binary operations pre-implemented are:
                 The standard binary operations implemented are:
                  "sum" (gives the interval sums for real numeric values-
-                    identity 0)
+                    identity 0, commutative)
                  "product" (gives the interval products for
-                    real numeric values- identity 1)
+                    real numeric values- identity 1, commutative)
                  "max" (gives the interval maxima for real numeric
-                    values- identity -float("inf"))
+                    values- identity -float("inf"), commutative)
                  "min" (gives the interval minima for real numeric
-                    values- identity float("inf"))
+                    values- identity float("inf"), commutative)
                  "gcd" (gives the greatest common divisor over all integers
-                    in the interval for integer values- identity 0)
+                    in the interval for integer values- identity 0,
+                    commutative)
                  "union" (gives the union of sets over the intervals
-                    for sets- identity set(), the empty set)
+                    for sets- identity set(), the empty set, commutative)
                  "bitwise and" (gives the interval bitwise and for
-                    integers- identity -1)
+                    integers- identity -1, commutative)
                  "bitwise or" (gives the interval bitwise or for
-                    integers- identity 0)
+                    integers- identity 0, commutative)
                  "bitwise xor" (gives the interval bitwise excluisve
-                    or for integers- identity 0)
+                    or for integers- identity 0, commutative)
             Default: "sum", or equivalently:
-                    {"sum": (lambda x, y: x + y, 0)}
+                    {"sum": (lambda x, y: x + y, 0, True)}
+        range_update_func (function on three variables or None): TODO
+        lazy_combine_op (3-tuple of a function on two variables,
+                a numeric value and a boolean or None): TODO
     
     Attributes:
         start_idx (int): The index of the first term in the sequence
         end_idx (int): The index of the final term in the sequence
-        op (2-tuple): Contains at index 0 the binary assiciative
+        op (3-tuple): Contains at index 0 the binary associative
                 operation as a function that takes two ordered
                 inputs and gives a single output of the same
                 kind, and at index 1 the identity element of that
-                binary operation.
+                binary operation and at index 2 a boolean indicating
+                whether the operation is commutative
+        range_update_func (function on three variables): TODO
+        lazy_combine_op (3-tuple of a function on two variables,
+                a numeric value and a boolean): TODO
         size (int): The number of terms of the sequence (equal to
                 end_idx - start_idx + 1).
         tree (list): A list of length twice the size representing
@@ -336,8 +344,9 @@ class SegmentTreeWithLazyPropogation(object):
         self,
         start_idx: int,
         end_idx: int,
-        op: Union[str, Tuple[Callable[[Any, Any], Any]]]="sum",
+        op: Union[str, Tuple[Callable[[Any, Any], Any], Any, bool]]="sum",
         range_update_func: Optional[Callable[[Any, Any, int], Any]]=None,
+        lazy_combine_op: Optional[Tuple[Callable[[Any, Any], Any], Any, bool]]=None,
     ):
         self.start_idx = start_idx
         self.end_idx = end_idx
@@ -350,11 +359,13 @@ class SegmentTreeWithLazyPropogation(object):
         else: n = self.size
         self.offset = n - self.start_idx
         self.tree = [self.op[1] for _ in range(n << 1)]
-        self.lazy = [self.op[1] for _ in range(n << 1)]
         self.range_update_func = (
             lambda val, delta, range_size: self.op[0](val, self._scalarMultiple(delta, range_size))
         ) if range_update_func is None else range_update_func
-    
+        self.lazy_combine_op = self.op if lazy_combine_op is None else lazy_combine_op
+        self.lazy = [self.lazy_combine_op[1] for _ in range(n << 1)]
+
+
     def _scalarMultiple(self, val: Any, mult: int) -> Any:
         # Note- mult must be a non-negative integer
         if val == self.op[1]: return self.op[1]
@@ -381,15 +392,15 @@ class SegmentTreeWithLazyPropogation(object):
     def _passDownLazy(self, idx: int) -> None:
         # Changes the current tree node value based on lazy and
         # propogates the lazy value to the child nodes (if any)
-        if self.lazy[idx] == self.op[1]: return
+        if self.lazy[idx] == self.lazy_combine_op[1]: return
         ci1 = idx << 1
         if ci1 < len(self.lazy):
-            self.lazy[ci1] = self.op[0](self.lazy[ci1], self.lazy[idx])
+            self.lazy[ci1] = self.lazy_combine_op[0](self.lazy[ci1], self.lazy[idx])
             if ci1 + 1 < len(self.lazy):
-                self.lazy[ci1 + 1] = self.op[0](self.lazy[ci1 + 1], self.lazy[idx])
+                self.lazy[ci1 + 1] = self.lazy_combine_op[0](self.lazy[ci1 + 1], self.lazy[idx])
 
         self.tree[idx] = self.range_update_func(self.tree[idx], self.lazy[idx], self._calculateRepresentedRangeSize(idx))
-        self.lazy[idx] = self.op[1]
+        self.lazy[idx] = self.lazy_combine_op[1]
         return
 
     def _resolveLazyNodes(self, node_inds: List[int]) -> None:
@@ -403,11 +414,11 @@ class SegmentTreeWithLazyPropogation(object):
         for i in node_ss:
             ci1 = i << 1
             if ci1 < len(self.lazy):
-                self.lazy[ci1] = self.op[0](self.lazy[ci1], self.lazy[i])
+                self.lazy[ci1] = self.lazy_combine_op[0](self.lazy[ci1], self.lazy[i])
                 if ci1 + 1 < len(self.lazy):
-                    self.lazy[ci1 + 1] = self.op[0](self.lazy[ci1 + 1], self.lazy[i])
+                    self.lazy[ci1 + 1] = self.lazy_combine_op[0](self.lazy[i], self.lazy[ci1 + 1])
             self.tree[i] = self.range_update_func(self.tree[i], self.lazy[i], self._calculateRepresentedRangeSize(i))
-            self.lazy[i] = self.op[1]
+            self.lazy[i] = self.lazy_combine_op[1]
         return
     
     def _updateNodeFromChildren(self, i: int) -> None:
@@ -420,7 +431,7 @@ class SegmentTreeWithLazyPropogation(object):
         if i2 + 1 < len(self.tree):
             self.tree[i] = self.op[0](self.tree[i],
                                       self.range_update_func(self.tree[i2 + 1], self.lazy[i2 + 1], self._calculateRepresentedRangeSize(i2 + 1)))
-        self.lazy[i] = self.op[1]
+        self.lazy[i] = self.lazy_combine_op[1]
         return
 
     def modifyRange(
@@ -436,12 +447,12 @@ class SegmentTreeWithLazyPropogation(object):
         while l < r:
             if r & 1:
                 r -= 1
-                self.lazy[r] = self.op[0](self.lazy[r], delta)
+                self.lazy[r] = self.lazy_combine_op[0](self.lazy[r], delta)
                 if r > 1:
                     pass_up_set.add(r >> 1)
 
             if l & 1:
-                self.lazy[l] = self.op[0](self.lazy[l], delta)
+                self.lazy[l] = self.lazy_combine_op[0](self.lazy[l], delta)
                 if l > 1:
                     pass_up_set.add(l >> 1)
                 l += 1
@@ -605,6 +616,9 @@ class SegmentTreeWithLazyPropogation(object):
             #print(l, r)
         return
 
+# Review- consider adding segment tree with lazy propogation solution to
+#  Leetcode #3943
+# Review- Is it possible to use a non-commutative lazy combine function
         
 def lengthOfLIS(
     nums: List[int],
@@ -979,12 +993,12 @@ def handleQuery(
 
     Examples:
         >>> handleQuery([1,0,1], [0,0,0], [[1,1,1],[2,1,0],[3,0,0]])
-        [668,758,1280]
+        [3]
 
         >>> handleQuery([1,0,0,0,0,0,1,0,1,1,0,0,0,1,0,1,1,0,0,0,1,0,1,1,1,0],
                 [4,33,4,8,19,48,21,9,23,33,36,43,47,48,18,30,38,1,47,19,21,31,19,24,3,41],
                 [[1,9,19],[1,1,16],[3,0,0],[2,5,0],[3,0,0],[2,29,0],[3,0,0]])
-        [[1,9,19],[1,1,16],[3,0,0],[2,5,0],[3,0,0],[2,29,0],[3,0,0]]
+        [668,758,1280]
     """
     n = len(nums1)
     #m = 1
@@ -992,7 +1006,13 @@ def handleQuery(
     #    m <<= 1
     m = n
     #print(f"m = {m}")
-    st_nums1 = SegmentTreeWithLazyPropogation(0, m - 1, op="sum", range_update_func=(lambda val, delta, range_size: (range_size - val) if delta & 1 else val))
+    st_nums1 = SegmentTreeWithLazyPropogation(
+        0,
+        m - 1,
+        op="sum",
+        range_update_func=(lambda val, delta, range_size: (range_size - val) if delta & 1 else val),
+        lazy_combine_op=((lambda x, y : x + y), 0, True),
+    )
     st_nums1.populate(0, nums1)
     while queries and queries[-1][0] != 3:
         queries.pop()
@@ -1042,4 +1062,5 @@ if __name__ == "__main__":
     print("\nhandleQuery([1,0,0,0,0,0,1,0,1,1,0,0,0,1,0,1,1,0,0,0,1,0,1,1,1,0], "
                 "[4,33,4,8,19,48,21,9,23,33,36,43,47,48,18,30,38,1,47,19,21,31,19,24,3,41], "
                 f"[[1,9,19],[1,1,16],[3,0,0],[2,5,0],[3,0,0],[2,29,0],[3,0,0]]) = {res}")
+    print(res)
                 
