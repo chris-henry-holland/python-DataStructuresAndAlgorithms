@@ -146,7 +146,7 @@ class KnuthMorrisPratt(object):
     def matchStartGenerator(self, s: Iterable[Any])\
             -> Generator[Any, None, None]:
         """
-        Generator that yields each and every index in the finite
+        Generator that yields each and every index in the
         ordered iterable object s at which a contiguous subsequence
         (for strings, a substring) matching the pattern represented by
         this KnuthMorrisPratt object (i.e. the attribute pattern)
@@ -154,7 +154,7 @@ class KnuthMorrisPratt(object):
         
         Args:
             Required positional:
-            s (iterable): The finite ordered iterable object in
+            s (iterable): The ordered iterable object in
                     which the start indices of occurences of the
                     pattern represented by this KnuthMorrisPratt object
                     are to be yielded.
@@ -187,7 +187,7 @@ class KnuthMorrisPratt(object):
             # from any position in the given string
             yield from range(len(s))
             return
-        elif m > len(s):
+        elif s.hasattr("__len__") and m > len(s):
             # If the pattern is longer than the string, no matches
             # are possible
             return
