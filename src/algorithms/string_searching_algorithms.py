@@ -187,7 +187,7 @@ class KnuthMorrisPratt(object):
             # from any position in the given string
             yield from range(len(s))
             return
-        elif s.hasattr("__len__") and m > len(s):
+        elif hasattr(s, "__len__") and m > len(s):
             # If the pattern is longer than the string, no matches
             # are possible
             return
