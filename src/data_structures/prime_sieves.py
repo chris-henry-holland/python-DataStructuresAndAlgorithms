@@ -554,7 +554,7 @@ class PrimeSPFsieve(SimplePrimeSieve):
         iter_lst = [[p ** x for x in range(p_fact[p] + 1)] for p in p_lst]
         res = set()
         for p_pow_tup in itertools.product(*iter_lst):
-            res.add(functools.reduce(lambda x, y: x * y, p_pow_tup))
+            res.add(functools.reduce(lambda x, y: x * y, p_pow_tup, initial=1))
         return res
     
     def factorisationsGenerator(self, n: int,\
