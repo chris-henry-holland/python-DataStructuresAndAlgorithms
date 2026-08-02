@@ -1193,6 +1193,57 @@ def addBoldTag(s: str, words: List[str]) -> str:
     if be_i < n: res.append(s[be_i:])
     return "".join(res)
 
+def boothAlgorithm(s: str) -> int:
+    """
+    Implementation of Booth's lexicographically minimal string
+    rotation algorithm.
+
+    Calculates the 0-indexed index of the string s such that
+    the string formed by the suffix of s starting at that index
+    concatenated with the prefix of s ending at one less than
+    that index (i.e. a cyclic rotation of the string to the
+    left by the number of steps equal to the index) is
+    the lexicographically smallest of all such strings.
+
+    Note that this index is guaranteed to be unique except in
+    the case where every character in the string is equal, for
+    which every index produces the same string. In that case,
+    the index 0 is returned.
+
+    Used in the solution to Project Euler #3999.
+
+    Args:
+        Required positional:
+        s (str): String for which the index of the string s
+                whose cyclic rotation to the left by that
+                many steps produces the lexicographically
+                smallest of all such strings (or zero if
+                all such strings are equal).
+    
+    Returns:
+    Integer (int) giving the 0-indexed index of the string s
+    such that the string formed by the suffix of s starting
+    at that index concatenated with the prefix of s ending
+    at one less than that index is the lexicographically smallest
+    of all such strings.
+    """
+    n = len(s)
+    fail = [-1] * (n << 1)
+    k = 0
+    for j in range(1, n << 1):
+        i = fail[j - k - 1]
+        while i >= 0 and s[j % n] != s[(k + i + 1) % n]:
+            if s[j % n] < s[(k + i + 1) % n]:
+                k = j - i - 1
+            i = fail[i]
+        if i == -1 and s[j % n] != s[(k + i + 1) % n]:
+            if s[j % n] < s[(k + i + 1) % n]:
+                k = j
+            fail[j - k] = -1
+        else:
+            fail[j - k] = i + 1
+    return k
+
 def manacherAlgorithm(s: Iterable[Any]) -> List[int]:
     """
     Implementation of Manacher's algorithm to find the 1D
