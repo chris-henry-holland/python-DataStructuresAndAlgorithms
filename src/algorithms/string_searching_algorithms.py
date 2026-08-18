@@ -551,13 +551,14 @@ def rollingHashWithValue(
     """
     if hasattr(s, "__len__") and len(s) < length:
         return
+    iter_obj = iter(s)
     if encoding_func is None:
         try: val = encoding_func(next(iter_obj))
         except StopIteration: return
         if isinstance(next(iter(s), str)):
             encoding_func = ord#lambda x: ord(x)
         else: encoding_func = lambda x: x
-    iter_obj = iter(s)
+    
     n_p = len(p_lst)
     hsh = [0] * n_p
     val_qu = deque()
