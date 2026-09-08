@@ -323,7 +323,7 @@ def floorHarmonicSeries(n: int) -> int:
     Calculates the value of the sum:
         (sum i from 1 to n) floor(n / i)
     using the identity that:
-        (sum i from 1 to n) floor(n / i) = ((sum i from 1 to k) floor(n / i)) - k ** 2
+        (sum i from 1 to n) floor(n / i) = 2 * ((sum i from 1 to k) floor(n / i)) - k ** 2
     where k = floor(sqrt(n))
     
     Args:
@@ -338,7 +338,7 @@ def floorHarmonicSeries(n: int) -> int:
     for the given value of n.
     """
     k = isqrt(n)
-    return sum(n // i for i in range(1, k + 1)) - k ** 2
+    return (sum(n // i for i in range(1, k + 1)) << 1) - k ** 2
 
 def IntegerPartitionGenerator(
     n: int,

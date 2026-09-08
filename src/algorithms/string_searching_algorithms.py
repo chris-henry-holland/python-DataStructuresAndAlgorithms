@@ -442,6 +442,51 @@ def rollingHash(
     """
     if hasattr(s, "__len__") and len(s) < length:
         return
+    iter_obj = iter(s)
+    try: l0 = next(iter_obj)
+    except StopIteration: return
+    if encoding_func is None:
+        if isinstance(l0, str):
+            encoding_func = ord#lambda x: ord(x)
+        else: encoding_func = lambda x: x
+    
+    n_p = len(p_lst)
+    val_qu = deque()
+
+    if length > 1:
+        val0 = encoding_func(l0)
+        val_qu.append(val0)
+        hsh = [val0 % md] * n_p
+
+        for _ in range(1, length - 1):
+            try: l = next(iter_obj)
+            except StopIteration: return
+            val = encoding_func(l)
+            val_qu.append(val)
+            for j, p in enumerate(p_lst):
+                hsh[j] = (hsh[j] * p + val) % md
+        try: l = next(iter_obj)
+        except StopIteration: return
+    else: l = l0
+    val = encoding_func(l)
+    val_qu.append(val)
+    for j, p in enumerate(p_lst):
+        hsh[j] = (hsh[j] * p + val) % md
+    yield tuple(hsh)
+    mults = [pow(p, length - 1, md) for p in p_lst]
+    while True:
+        try: l = next(iter_obj)
+        except StopIteration: break
+        val = encoding_func(l)
+        val_qu.append(val)
+        val2 = val_qu.popleft()
+        for j, p in enumerate(p_lst):
+            hsh[j] = ((hsh[j] - mults[j] * val2) * p + val) % md
+        yield tuple(hsh)
+    return
+    """
+    if hasattr(s, "__len__") and len(s) < length:
+        return
     if encoding_func is None:
         try: val = encoding_func(next(iter_obj))
         except StopIteration: return
@@ -469,6 +514,7 @@ def rollingHash(
             hsh[j] = ((hsh[j] - mults[j] * val2) * p + val) % md
         yield tuple(hsh)
     return
+    """
 
 def rollingHashWithValue(
     s: Iterable[Any],
@@ -552,35 +598,43 @@ def rollingHashWithValue(
     if hasattr(s, "__len__") and len(s) < length:
         return
     iter_obj = iter(s)
+    try: l0 = next(iter_obj)
+    except StopIteration: return
     if encoding_func is None:
-        try: val = encoding_func(next(iter_obj))
-        except StopIteration: return
-        if isinstance(next(iter(s), str)):
+        if isinstance(l0, str):
             encoding_func = ord#lambda x: ord(x)
         else: encoding_func = lambda x: x
     
     n_p = len(p_lst)
-    hsh = [0] * n_p
     val_qu = deque()
-    for i in range(length - 1):
+
+    if length > 1:
+        val0 = encoding_func(l0)
+        val_qu.append(val0)
+        hsh = [val0 % md] * n_p
+        yield (l0, None)
+
+        for _ in range(1, length - 1):
+            try: l = next(iter_obj)
+            except StopIteration: return
+            val = encoding_func(l)
+            val_qu.append(val)
+            for j, p in enumerate(p_lst):
+                hsh[j] = (hsh[j] * p + val) % md
+            yield (l, None)
+    if length > 1:
         try: l = next(iter_obj)
         except StopIteration: return
-        val = encoding_func(l)
-        val_qu.append(val)
-        for j, p in enumerate(p_lst):
-            hsh[j] = (hsh[j] * p + val) % md
-        yield (l, None)
-    try: l = next(iter_obj)
-    except StopIteration: return
+    else: l = l0
     val = encoding_func(l)
     val_qu.append(val)
     for j, p in enumerate(p_lst):
         hsh[j] = (hsh[j] * p + val) % md
     yield (l, tuple(hsh))
     mults = [pow(p, length - 1, md) for p in p_lst]
-    for i in itertools.count(length):
+    while True:
         try: l = next(iter_obj)
-        except StopIteration: return
+        except StopIteration: break
         val = encoding_func(l)
         val_qu.append(val)
         val2 = val_qu.popleft()
