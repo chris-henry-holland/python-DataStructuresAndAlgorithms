@@ -196,17 +196,17 @@ class SimplePrimeSieve(object):
         # answer
         if n <= 1: return (False, True)
         elif n == 2: return (True, True)
-        mx = 2 ** 64 - 1
         thresholds = [
-            (0, [2]),
-            (2047, [3]),
-            (1373653, [5]),
-            (25326001, [7]),
-            (3215031751, [11]),
-            (2152302898747, [13]),
-            (3474749660383, [17]),
-            (341550071728321, [19, 23]),
-            (3825123056546413051, [31, 37]),
+            (2_047, [2]),
+            (1_373_653, [3]),
+            (25_326_001, [5]),
+            (3_215_031_751, [7]),
+            (2_152_302_898_747, [11]),
+            (3_474_749_660_383, [13]),
+            (341_550_071_728_321, [17]),
+            (3_825_123_056_546_413_051, [19, 23]),
+            (318_665_857_834_031_151_167_461, [29, 31, 37]),
+            (3_317_044_064_679_887_385_961_981, [41])
         ]
         seen = {0}
         s = 1
@@ -215,11 +215,12 @@ class SimplePrimeSieve(object):
             d >>= 1
             s += 1
         for m, a_lst in thresholds:
-            if n < m: return (True, True)
+            #if n < m: return (True, True)
             for a in a_lst:
                 seen.add(a)
                 if not self._millerRabinTrial(n, s, d, a): return (False, True)
-        if n <= mx: return (True, True)
+            if n < m: return (True, True)
+        #if n <= mx: return (True, True)
         for _ in range(min(max_n_additional_trials_if_above_max, n - len(seen) - 2)):
             a = 0
             while a in seen:
@@ -279,8 +280,8 @@ class SimplePrimeSieve(object):
         Boolean (bool) giving whether or not n is a prime number.
         """
         if len(self.sieve) > n:
-            self.extendSieve(n)
-            return self.sieve[n]
+            #self.extendSieve(n)
+            return self._isPrimeFromSieve(n)
         if use_miller_rabin_screening:
             res0, certain = self.millerRabinPrimalityTestWithKnownBounds(
                 n,
