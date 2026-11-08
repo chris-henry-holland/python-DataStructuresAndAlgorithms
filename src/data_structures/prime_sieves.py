@@ -47,13 +47,21 @@ class SimplePrimeSieve(object):
         self,
         n_max: Optional[int]=None,
         use_p_lst: bool=True,
+        sieve_max: Optional[int]=10 ** 7,
     ):
         if n_max is None: n_max = 3
+        if sieve_max is not None:
+            n_max = min(n_max, sieve_max)
         self.n_max = n_max
+        self._sieve_max = sieve_max
         self.use_p_lst = use_p_lst
         self.initialiseSieve()
         self.extendSieve(self.n_max)
     
+    @property
+    def sieve_max(self) -> int | None:
+        return self._sieve_max
+
     def initialiseSieve(self) -> None:
         self.sieve = [False, False, True, True]
         if self.use_p_lst:
@@ -108,6 +116,35 @@ class SimplePrimeSieve(object):
                 i2 = p * i
                 sieve[i2] = False
         return
+
+    def _createPrimeSearchCycle(self, cycle_len_ub: int) -> tuple[list[int], int]:
+        if cycle_len_ub < 1:
+            return ([], 0)
+        if cycle_len_ub == 1:
+            return [[0], 1]
+        p_prod = 1
+        p_lst = []
+        for p in self.endlessPrimeGenerator():
+            p_prod2 = p_prod * p
+            if p_prod2 > cycle_len_ub: break
+            p_lst.append(p)
+            p_prod = p_prod2
+        sieve = [True] * p_prod
+        sieve[0] = False
+        for p in p_lst:
+            sieve[p] = False
+            for num in range(p * p, p_prod2, p):
+                sieve[num] = False
+        return ([x for x in range(p_prod) if sieve[x]], p_prod)
+    
+    @property
+    def prime_search_cycle(self) -> tuple[list[int], int]:
+        res = getattr(self, "_prime_search_cycle", None)
+        if res is None:
+            cycle_len_ub = self.sieve_max
+            res = ([], -1) if cycle_len_ub is None else self._createPrimeSearchCycle(cycle_len_ub)
+            setattr(self, "_prime_search_cycle", res)
+        return res
 
     @staticmethod
     def _millerRabinTrial(
@@ -335,10 +372,11 @@ class PrimeSPFsieve(SimplePrimeSieve):
         self,
         n_max: Optional[int]=None,
         use_p_lst: bool=True,
-        extend_mod6: bool=False,
+        sieve_max: Optional[int]=10 ** 7,
+        #extend_mod6: bool=False,
     ):
-        self.extend_mod6 = extend_mod6
-        super().__init__(n_max=n_max, use_p_lst=use_p_lst)
+        #self.extend_mod6 = extend_mod6
+        super().__init__(n_max=n_max, use_p_lst=use_p_lst, sieve_max=sieve_max)
         
     
     def initialiseSieve(self) -> None:
