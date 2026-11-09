@@ -124,7 +124,7 @@ class SimplePrimeSieve(object):
             return [[0], 1]
         p_prod = 1
         p_lst = []
-        for p in self.endlessPrimeGenerator():
+        for p in self.primeGenerator(p_max=None, sieve_extend_max=None):
             p_prod2 = p_prod * p
             if p_prod2 > cycle_len_ub: break
             p_lst.append(p)
@@ -237,7 +237,7 @@ class SimplePrimeSieve(object):
         n: int,
         extend_sieve: bool=False,
         extend_sieve_sqrt: bool=False,
-        use_miller_rabin_screening: bool=False,
+        use_miller_rabin_screening: bool=True,
         n_miller_rabin_trials: int=3,
     ) -> bool:
         """
@@ -266,7 +266,7 @@ class SimplePrimeSieve(object):
             use_miller_rabin_screening (bool): Uses Miller-Rabin primality
                     test to see if this test shows that n is definitely
                     composite before performing the full primality check.
-                Default: False
+                Default: True
             n_miller_rabin_trials (int): If use_miller_rabin_screening
                     is set to True, how many different trials of the
                     Miller-Rabin primality test (with different bases each
@@ -311,32 +311,109 @@ class SimplePrimeSieve(object):
                 return False
         return True
 
-    def endlessPrimeGenerator(self) -> Generator[int, None, None]:
+    def _primeGeneratorUsingPrimeSearchCycle(
+        self,
+        p_min: int,
+        p_max: Optional[int]=None,
+    ) -> Generator[int, None, None]:
+        if p_max < p_min: return
+        psc, cycle_len = self.prime_search_cycle
+        if p_min < cycle_len:
+            raise ValueError(
+                "p_min must be no less than the prime search "
+                f"cycle length (in this case {cycle_len})"
+            )
+
+        def primeTest(p: int) -> bool:
+            return self.isPrime(
+                p,
+                extend_sieve=False,
+                extend_sieve_sqrt=False,
+                use_miller_rabin_screening=True,
+                n_miller_rabin_trials=10,
+            )
+
+        r = p_min % cycle_len
+        num0 = p_min - r
+        i0 = bisect.bisect_left(psc, r)
+        num0_it = itertools.count(num0, step=cycle_len) if p_max is None else range(num0, p_max - cycle_len, cycle_len)
+        for num0 in num0_it:
+            for i in range(i0, len(psc)):
+                p = num0 + psc[i]
+                if primeTest(p): yield p
+            i0 = 0
+        # Note- can only reach here if p_max is and integer
+        r2 = (p_max % cycle_len)
+        num0 = p_max - r2
+        i2 = bisect.bisect_right(psc, r2)
+        for i in range(i0, i2):
+            p = num0 + psc[i]
+            if primeTest(p): yield p
+        return
+
+    def primeGenerator(
+        self,
+        p_max: Optional[int]=None,
+        sieve_extend_max: Optional[int]=None,
+    ) -> Generator[int, None, None]:
         """
-        Generates the primes in order of increasing size. Given that
-        there are infinitely many prime numbers, this generator does
+        Generates the primes in order of increasing size that do not
+        exceed p_max (if this is provided). Given that there are infinitely
+        many prime numbers, if p_max is not given, this generator does
         not terminate by itself, so any loop utilising this generator
         must contain a break or return statement.
         Note that this generator can only be used if on instatiation
         of the SimplePrimeSieve object the option use_p_lst was set
         to True.
         
+        Args:
+            Optional named:
+            p_max (int or None): If given as an integer, specifies the
+                    inclusive upper bound on the size of prime numbers
+                    yielded. If not given, or given as None, there is
+                    no upper bound on the prime numbers yielded, and
+                    consequently the generator will not of itself
+                    terminate.
+                Default: None
+            sieve_extend_max (int or None): If given as an integer no
+                    greater than the attribute sieve_max, specifies
+                    the maximum number the prime sieve is permitted
+                    to be extended when generating primes. If not given,
+                    given as None, or given as an integer exceeding the
+                    attribute sieve_max, then the sieve will be permitted
+                    to extend up to the attribute sieve_max.
+
         Yields:
         Integer (int), with (for integer i) the ith item yielded
         being the ith prime
         """
         if not self.use_p_lst:
-            return NotImplementedError("This method requires the SimplePrimeSieve "
-                    "object to have use_p_lst set to True.")
-        for i, p in enumerate(self.p_lst): yield p
-        n_mx = 10 ** (largestLEpowN(len(self.sieve) - 1, base=10) + 1)
+            return NotImplementedError(
+                "This method requires the SimplePrimeSieve "
+                "object to have use_p_lst set to True."
+            )
+        sieve_extend_max = self.sieve_max if sieve_extend_max is None else min(sieve_extend_max, self.sieve_max)
+        if p_max is None:
+            for i, p in enumerate(self.p_lst):
+                yield p
+        else:
+            i_max = bisect.bisect_right(self.p_lst, p_max)
+            for i in range(i_max):
+                yield self.p_lst[i]
+            if p_max < len(self.sieve): return
+            sieve_extend_max = min(sieve_extend_max, p_max)
+
+        n_mx = min(sieve_extend_max, (10 ** (largestLEpowN(len(self.sieve) - 1, base=10) + 1)))
         #n_mx = 10 ** (math.ceil(math.log(len(self.sieve) - 1, 10)) + 1)
         while True:
             self.extendSieve(n_mx)
             for i in range(i + 1, len(self.p_lst)):
                 yield self.p_lst[i]
-            n_mx *= 10
+            if n_mx >= sieve_extend_max: break
+            n_mx = min(n_mx * 10, sieve_extend_max)
+        yield from self._primeGeneratorUsingPrimeSearchCycle(n_mx + 1, p_max=p_max)
         return
+        
     
     def primeCountingFunction(self, n: Union[int, float]) -> int:
         """
