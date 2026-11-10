@@ -117,7 +117,7 @@ class SimplePrimeSieve(object):
                 sieve[i2] = False
         return
 
-    def _createPrimeSearchCycle(self, cycle_len_ub: int) -> tuple[list[int], int]:
+    def _createPrimeSearchCycle(self, cycle_len_ub: int) -> tuple[list[int], list[int], int]:
         if cycle_len_ub < 1:
             return ([], 0)
         if cycle_len_ub == 1:
@@ -133,15 +133,15 @@ class SimplePrimeSieve(object):
         sieve[0] = False
         for p in p_lst:
             sieve[p] = False
-            for num in range(p * p, p_prod2, p):
+            for num in range(p * p, p_prod, p):
                 sieve[num] = False
-        return ([x for x in range(p_prod) if sieve[x]], p_prod)
+        return ([x for x in range(p_prod) if sieve[x]], p_lst, p_prod)
     
     @property
-    def prime_search_cycle(self) -> tuple[list[int], int]:
+    def prime_search_cycle(self) -> tuple[list[int], list[int], int]:
         res = getattr(self, "_prime_search_cycle", None)
         if res is None:
-            cycle_len_ub = self.sieve_max
+            cycle_len_ub = self.sieve_max * self.sieve_max
             res = ([], -1) if cycle_len_ub is None else self._createPrimeSearchCycle(cycle_len_ub)
             setattr(self, "_prime_search_cycle", res)
         return res
@@ -317,12 +317,16 @@ class SimplePrimeSieve(object):
         p_max: Optional[int]=None,
     ) -> Generator[int, None, None]:
         if p_max < p_min: return
-        psc, cycle_len = self.prime_search_cycle
-        if p_min < cycle_len:
-            raise ValueError(
-                "p_min must be no less than the prime search "
-                f"cycle length (in this case {cycle_len})"
-            )
+        psc, p_lst, cycle_len = self.prime_search_cycle
+        i = bisect.bisect_left(p_lst, p_min)
+        for i in range(i, len(p_lst)):
+            if p_lst[i] > p_max: return
+            yield p_lst[i]
+        #if p_min < cycle_len:
+        #    raise ValueError(
+        #        "p_min must be no less than the prime search "
+        #        f"cycle length (in this case {cycle_len})"
+        #    )
 
         def primeTest(p: int) -> bool:
             return self.isPrime(
@@ -387,23 +391,35 @@ class SimplePrimeSieve(object):
         Integer (int), with (for integer i) the ith item yielded
         being the ith prime
         """
-        if not self.use_p_lst:
-            return NotImplementedError(
-                "This method requires the SimplePrimeSieve "
-                "object to have use_p_lst set to True."
-            )
+        #if not self.use_p_lst:
+        #    return NotImplementedError(
+        #        "This method requires the SimplePrimeSieve "
+        #        "object to have use_p_lst set to True."
+        #    )
+        
+        p_max2 = float("inf") if p_max is None else p_max
+        if p_max2 < 2: return
         sieve_extend_max = self.sieve_max if sieve_extend_max is None else min(sieve_extend_max, self.sieve_max)
-        if p_max is None:
-            for i, p in enumerate(self.p_lst):
-                yield p
-        else:
-            i_max = bisect.bisect_right(self.p_lst, p_max)
-            for i in range(i_max):
-                yield self.p_lst[i]
-            if p_max < len(self.sieve): return
-            sieve_extend_max = min(sieve_extend_max, p_max)
+        sieve_extend_max = min(sieve_extend_max, p_max2)
 
         n_mx = min(sieve_extend_max, (10 ** (largestLEpowN(len(self.sieve) - 1, base=10) + 1)))
+        
+        if self.use_p_lst:
+            if p_max is None:
+                for i, p in enumerate(self.p_lst):
+                    yield p
+            else:
+                i_max = bisect.bisect_right(self.p_lst, p_max)
+                for i in range(i_max):
+                    yield self.p_lst[i]
+                if p_max < len(self.sieve): return
+                #sieve_extend_max = min(sieve_extend_max, p_max)
+        else:
+            yield 2
+            for p in range(3, min(p_max2, len(self.sieve)), 2):
+                if self._isPrimeFromSieve(p):
+                    yield p
+
         #n_mx = 10 ** (math.ceil(math.log(len(self.sieve) - 1, 10)) + 1)
         while True:
             self.extendSieve(n_mx)
