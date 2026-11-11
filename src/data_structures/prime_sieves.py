@@ -48,6 +48,7 @@ class SimplePrimeSieve(object):
         n_max: Optional[int]=None,
         use_p_lst: bool=True,
         sieve_max: Optional[int]=10 ** 7,
+        prime_search_cycle_size_max: int=10 ** 5,
     ):
         if n_max is None: n_max = 3
         if sieve_max is not None:
@@ -55,6 +56,7 @@ class SimplePrimeSieve(object):
         self.n_max = n_max
         self._sieve_max = sieve_max
         self.use_p_lst = use_p_lst
+        self._prime_search_cycle_size_max = prime_search_cycle_size_max
         self.initialiseSieve()
         self.extendSieve(self.n_max)
     
@@ -62,60 +64,9 @@ class SimplePrimeSieve(object):
     def sieve_max(self) -> int | None:
         return self._sieve_max
 
-    def initialiseSieve(self) -> None:
-        self.sieve = [False, False, True, True]
-        if self.use_p_lst:
-            self.p_lst = [2, 3]
-    
-    def extendSieve(self, n_max: int) -> None:
-        if not self.use_p_lst:
-            return self.extendSieveNoPLst(n_max)
-        #since = time.time()
-        n_orig = len(self.sieve) - 1
-        if n_orig >= n_max: return
-        sieve = self.sieve
-        p_lst = self.p_lst
-        sieve.extend([True for x in range(n_orig + 1, n_max + 1)])
-        for p in p_lst:
-            if p * p > n_max: break
-            for i in range(max(p, (n_orig // p) + 1), (n_max // p) + 1):
-                i2 = p * i
-                sieve[i2] = False
-        
-        def incorporatePrime(p: int) -> None:
-            #print(f"p = {p}")
-            if sieve[p]: p_lst.append(p)
-            else: return
-            for i in range(max(p, (n_orig // p) + 1), (n_max // p) + 1):
-                i2 = p * i
-                sieve[i2] = False
-            return
-        
-        # Using the fact that primes greater than 2 are 1 modulo 2
-        start = n_orig + 1 + (n_orig & 1)
-        end = isqrt(n_max)
-        #print(start, end)
-        p = start - 2
-        for p in range(start, end + 1, 2):
-            incorporatePrime(p)
-        for p in range(p + 2, n_max + 1, 2):
-            if sieve[p]: p_lst.append(p)
-        return
-
-    def extendSieveNoPLst(self, n_max: int):
-        n_orig = len(self.sieve) - 1
-        if n_orig >= n_max: return
-        sieve = self.sieve
-        sieve.extend([True for x in range(n_orig + 1, n_max + 1)])
-        for i in range(max(2, (n_orig >> 1) + 1), (n_max >> 1) + 1):
-            sieve[i << 1] = False
-        for p in range(3, n_max + 1, 2):
-            if p * p > n_max: break
-            if not sieve[p]: continue
-            for i in range(max(p, (n_orig // p) + 1), (n_max // p) + 1):
-                i2 = p * i
-                sieve[i2] = False
-        return
+    @property
+    def prime_search_cycle_size_max(self) -> int:
+        return self._prime_search_cycle_size_max
 
     def _createPrimeSearchCycle(self, cycle_len_ub: int) -> tuple[list[int], list[int], int]:
         if cycle_len_ub < 1:
@@ -145,6 +96,148 @@ class SimplePrimeSieve(object):
             res = ([], -1) if cycle_len_ub is None else self._createPrimeSearchCycle(cycle_len_ub)
             setattr(self, "_prime_search_cycle", res)
         return res
+
+    def _primeGeneratorUsingPrimeSearchCycle(
+        self,
+        p_min: int,
+        p_max: Optional[int]=None,
+    ) -> Generator[int, None, None]:
+        if p_max < p_min: return
+        psc, p_lst, cycle_len = self.prime_search_cycle
+        i = bisect.bisect_left(p_lst, p_min)
+        for i in range(i, len(p_lst)):
+            if p_lst[i] > p_max: return
+            yield p_lst[i]
+        #if p_min < cycle_len:
+        #    raise ValueError(
+        #        "p_min must be no less than the prime search "
+        #        f"cycle length (in this case {cycle_len})"
+        #    )
+
+        def primeTest(p: int) -> bool:
+            return self.isPrime(
+                p,
+                extend_sieve=False,
+                extend_sieve_sqrt=False,
+                use_miller_rabin_screening=True,
+                n_miller_rabin_trials=10,
+            )
+
+        r = p_min % cycle_len
+        num0 = p_min - r
+        i0 = bisect.bisect_left(psc, r)
+        num0_it = itertools.count(num0, step=cycle_len) if p_max is None else range(num0, p_max - cycle_len, cycle_len)
+        for num0 in num0_it:
+            for i in range(i0, len(psc)):
+                p = num0 + psc[i]
+                if primeTest(p): yield p
+            i0 = 0
+        # Note- can only reach here if p_max is and integer
+        r2 = (p_max % cycle_len)
+        num0 = p_max - r2
+        i2 = bisect.bisect_right(psc, r2)
+        for i in range(i0, i2):
+            p = num0 + psc[i]
+            if primeTest(p): yield p
+        return
+
+    def initialiseSieve(self) -> None:
+        self.sieve = [False, False, True, True]
+        if self.use_p_lst:
+            self.p_lst = [2, 3]
+
+    def _sievedPrimesGenerator(self, p_max: int) -> Generator[int, None, None]:
+        # Assumes without checking that p_max is within the extent of the sieve
+        if self.use_p_lst:
+            i_max = bisect.bisect_right(self.p_lst, p_max)
+            for i in range(0, i_max): yield self.p_lst[i]
+            return
+        yield from self._primeGeneratorUsingPrimeSearchCycle(0, len(self.sieve) - 1)
+        return
+
+    def _updateCompositeSieveEntry(self, num: int, spf: int, spf_complement: int) -> None:
+        self.sieve[num] = False
+        return
+
+    def _initialSieveExtension(self, n_max_end: int) -> int:
+        n_max_start = len(self.sieve) - 1
+        self.sieve.extend([True for x in range(n_max_start + 1, n_max_end + 1)])
+
+    def _propogateKnownPrimesIntoExtendedSieve(
+        self,
+        n_max_start: int,
+    ) -> None:
+        n_max_end = len(self.sieve) - 1
+        p_max = isqrt(n_max_end)
+        for p in self._sievedPrimesGenerator(p_max):
+            for i in range(max(p, (n_max_start // p) + 1), (n_max_end // p) + 1):
+                num = p * i
+                self._updateCompositeSieveEntry(num, p, i)#self.sieve[i2] = False
+        return
+
+    def _incorporateIntegerIntoSieve(
+        self,
+        p: int,
+        n_max_start: int,
+    ) -> None:
+        n_max_end = len(self.sieve) - 1
+        if p > n_max_end or not self.sieve[p]: return
+        if self.use_p_lst:
+            self.p_lst.append(p)
+        for i in range(max(p, (n_max_start // p) + 1), (n_max_end // p) + 1):
+            num = p * i
+            self._updateCompositeSieveEntry(num, p, i)#self.sieve[i2] = False
+        return
+
+    def extendSieve(self, n_max: int) -> None:
+        if not self.use_p_lst:
+            return self.extendSieveNoPLst(n_max)
+        #since = time.time()
+        n_orig = len(self.sieve) - 1
+        if n_orig >= n_max: return
+        sieve = self.sieve
+        p_lst = self.p_lst
+        self._initialSieveExtension(n_max)
+        for p in p_lst:
+            if p * p > n_max: break
+            for i in range(max(p, (n_orig // p) + 1), (n_max // p) + 1):
+                num = p * i
+                self._updateCompositeSieveEntry(num, p, i)#sieve[i2] = False
+        
+        def incorporatePrime(p: int) -> None:
+            #print(f"p = {p}")
+            if sieve[p]: p_lst.append(p)
+            else: return
+            for i in range(max(p, (n_orig // p) + 1), (n_max // p) + 1):
+                num = p * i
+                self._updateCompositeSieveEntry(num, p, i)#sieve[i2] = False
+            return
+        
+        # Using the fact that primes greater than 2 are 1 modulo 2
+        start = n_orig + 1 + (n_orig & 1)
+        end = isqrt(n_max)
+        #print(start, end)
+        p = start - 2
+        for p in range(start, end + 1, 2):
+            incorporatePrime(p)
+        for p in range(p + 2, n_max + 1, 2):
+            if sieve[p]: p_lst.append(p)
+        return
+
+    def extendSieveNoPLst(self, n_max: int):
+        n_orig = len(self.sieve) - 1
+        if n_orig >= n_max: return
+        sieve = self.sieve
+        sieve.extend([True for x in range(n_orig + 1, n_max + 1)])
+        for i in range(max(2, (n_orig >> 1) + 1), (n_max >> 1) + 1):
+            sieve[i << 1] = False
+        for p in range(3, n_max + 1, 2):
+            if p * p > n_max: break
+            if not sieve[p]: continue
+            for i in range(max(p, (n_orig // p) + 1), (n_max // p) + 1):
+                num = p * i
+                self._updateCompositeSieveEntry(num, p, i)#sieve[i2] = False
+        return
 
     @staticmethod
     def _millerRabinTrial(
@@ -311,50 +404,6 @@ class SimplePrimeSieve(object):
                 return False
         return True
 
-    def _primeGeneratorUsingPrimeSearchCycle(
-        self,
-        p_min: int,
-        p_max: Optional[int]=None,
-    ) -> Generator[int, None, None]:
-        if p_max < p_min: return
-        psc, p_lst, cycle_len = self.prime_search_cycle
-        i = bisect.bisect_left(p_lst, p_min)
-        for i in range(i, len(p_lst)):
-            if p_lst[i] > p_max: return
-            yield p_lst[i]
-        #if p_min < cycle_len:
-        #    raise ValueError(
-        #        "p_min must be no less than the prime search "
-        #        f"cycle length (in this case {cycle_len})"
-        #    )
-
-        def primeTest(p: int) -> bool:
-            return self.isPrime(
-                p,
-                extend_sieve=False,
-                extend_sieve_sqrt=False,
-                use_miller_rabin_screening=True,
-                n_miller_rabin_trials=10,
-            )
-
-        r = p_min % cycle_len
-        num0 = p_min - r
-        i0 = bisect.bisect_left(psc, r)
-        num0_it = itertools.count(num0, step=cycle_len) if p_max is None else range(num0, p_max - cycle_len, cycle_len)
-        for num0 in num0_it:
-            for i in range(i0, len(psc)):
-                p = num0 + psc[i]
-                if primeTest(p): yield p
-            i0 = 0
-        # Note- can only reach here if p_max is and integer
-        r2 = (p_max % cycle_len)
-        num0 = p_max - r2
-        i2 = bisect.bisect_right(psc, r2)
-        for i in range(i0, i2):
-            p = num0 + psc[i]
-            if primeTest(p): yield p
-        return
-
     def primeGenerator(
         self,
         p_max: Optional[int]=None,
@@ -453,7 +502,6 @@ class SimplePrimeSieve(object):
         self.extendSieve(n)
         return bisect.bisect_right(self.p_lst, n)
 
-# Review- consider implementing as a child class of SimplePrimeSieve
 class PrimeSPFsieve(SimplePrimeSieve):
     """
     Finds the smallest prime factor for each number and the number of times
@@ -467,11 +515,16 @@ class PrimeSPFsieve(SimplePrimeSieve):
         n_max: Optional[int]=None,
         use_p_lst: bool=True,
         sieve_max: Optional[int]=10 ** 7,
+        prime_search_cycle_size_max: int=10 ** 5,
         #extend_mod6: bool=False,
     ):
         #self.extend_mod6 = extend_mod6
-        super().__init__(n_max=n_max, use_p_lst=use_p_lst, sieve_max=sieve_max)
-        
+        super().__init__(
+            n_max=n_max,
+            use_p_lst=use_p_lst,
+            sieve_max=sieve_max,
+            prime_search_cycle_size_max=prime_search_cycle_size_max,
+        )
     
     def initialiseSieve(self) -> None:
         self.sieve = [(-1, 0, 1)] * 2
@@ -479,9 +532,17 @@ class PrimeSPFsieve(SimplePrimeSieve):
         self.sieve.append((3, 1, 1))
         if self.use_p_lst:
             self.p_lst = [2, 3]
-    
-    def extendSieve(self, n_max: int, mod6: Optional[bool]=None) -> None:
-        if mod6 is None: mod6 = self.extend_mod6
+
+    def _updateCompositeSieveEntry(self, num: int, spf: int, spf_complement: int) -> None:
+        self.sieve[num] = (spf, self.sieve[spf_complement][1] + 1, self.sieve[spf_complement][2]) if self.sieve[spf_complement][0] == spf else (spf, 1, spf_complement)
+        return
+
+    def _initialSieveExtension(self, n_max_end: int) -> int:
+        n_max_start = len(self.sieve) - 1
+        self.sieve.extend([(x, 1, 1) for x in range(n_max_start + 1, n_max_end + 1)])
+    """
+    def extendSieve(self, n_max: int) -> None:#, mod6: Optional[bool]=None) -> None:
+        #if mod6 is None: mod6 = self.extend_mod6
         if not self.use_p_lst:
             return self.extendSieveNoPLst(n_max)
         #since = time.time()
@@ -506,7 +567,8 @@ class PrimeSPFsieve(SimplePrimeSieve):
                 if p > sieve[i2][0]: continue
                 sieve[i2] = (p, sieve[i][1] + 1, sieve[i][2]) if sieve[i][0] == p else (p, 1, i)
             return
-        
+        psc, psc_p_lst, psc_len = self.prime_search_cycle
+        mod6 = False
         if mod6:
             # Using the fact that primes greater than 3 are 1 or 5 modulo 6
             start = n_orig + 7 - (n_orig % 6)
@@ -543,6 +605,7 @@ class PrimeSPFsieve(SimplePrimeSieve):
                 if p > n_orig and sieve[p][0] == p:
                     p_lst.append(p)
         else:
+        
             # Using the fact that primes greater than 2 are 1 modulo 2
             start = n_orig + 1 + (n_orig & 1)
             end = isqrt(n_max)
@@ -561,6 +624,7 @@ class PrimeSPFsieve(SimplePrimeSieve):
                 #print(p)
                 if sieve[p][0] == p: p_lst.append(p)
         #print(f"Time taken = {time.time() - since:.4f} seconds")
+        
         return
 
     def extendSieveNoPLst(self, n_max: int):
@@ -579,7 +643,7 @@ class PrimeSPFsieve(SimplePrimeSieve):
                 if p > sieve[i2][0]: continue
                 sieve[i2] = (p, sieve[i][1] + 1, sieve[i][2]) if sieve[i][0] == p else (p, 1, i)
         return
-
+    """
     def _isPrimeFromSieve(self, n: int) -> bool:
         return self.sieve[n][0] == n
 
