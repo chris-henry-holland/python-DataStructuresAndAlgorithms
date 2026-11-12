@@ -68,11 +68,58 @@ class SimplePrimeSieve(object):
     def prime_search_cycle_size_max(self) -> int:
         return self._prime_search_cycle_size_max
 
-    def _createPrimeSearchCycle(self, cycle_len_ub: int) -> tuple[list[int], list[int], int]:
-        if cycle_len_ub < 1:
-            return ([], 0)
+    @staticmethod
+    def _createPrimeSearchCycle(
+        cycle_size_ub: int,
+        cycle_len_ub: Optional[int]=None,
+    ) -> tuple[list[int], list[int], int]:
+        if cycle_len_ub is None:
+            cycle_len_ub = float("inf")
+        if cycle_len_ub < 1 or cycle_size_ub < 1:
+            return [[], [], 0]
         if cycle_len_ub == 1:
-            return [[0], 1]
+            return [[0], [], 1]
+        if cycle_size_ub < 2 or cycle_len_ub < 6:
+            return [[1], [2], 2]
+        res = [[1, 5], [2, 3], 6]
+        #print(res)
+        while True:
+            p = res[0][1]
+            cycle_len = res[2] * p
+            if cycle_len > cycle_len_ub: break
+            lst = []
+            i = 0
+            j = 0
+            mult_nxt = p * res[0][j]
+            #print(f"mult_nxt = {mult_nxt}")
+            #too_big = False
+            for num0 in range(0, cycle_len, res[2]):
+                for i in range(len(res[0])):
+                    if res[0][i] != mult_nxt:
+                        lst.append(res[0][i] + num0)
+                        if len(lst) > cycle_size_ub:
+                            #print("too big")
+                            break
+                        continue
+                    #j0 = j
+                    #j = (j + 1) % len(res[0])
+                    #mult_nxt += p * (res[0][j] - res[0][j0])
+                    j += 1
+                    mult_nxt = (mult_nxt + p * (res[0][j] - res[0][j - 1])) if j < len(res[0]) else float("inf")
+                    #print(f"mult_nxt = {mult_nxt}")
+                else:
+                    mult_nxt -= res[2]
+                    continue
+                break
+                #if too_big: break
+            else:
+                res = [lst, res[1], cycle_len]
+                res[1].append(p)
+                #print(res)
+                continue
+            break
+        return res
+        """
         p_prod = 1
         p_lst = []
         for p in self.primeGenerator(p_max=None, sieve_extend_max=None):
@@ -87,13 +134,14 @@ class SimplePrimeSieve(object):
             for num in range(p * p, p_prod, p):
                 sieve[num] = False
         return ([x for x in range(p_prod) if sieve[x]], p_lst, p_prod)
+        """
     
     @property
     def prime_search_cycle(self) -> tuple[list[int], list[int], int]:
         res = getattr(self, "_prime_search_cycle", None)
         if res is None:
-            cycle_len_ub = self.sieve_max * self.sieve_max
-            res = ([], -1) if cycle_len_ub is None else self._createPrimeSearchCycle(cycle_len_ub)
+            #cycle_len_ub = self.sieve_max * self.sieve_max
+            res = self._createPrimeSearchCycle(self.prime_search_cycle_size_max)
             setattr(self, "_prime_search_cycle", res)
         return res
 
