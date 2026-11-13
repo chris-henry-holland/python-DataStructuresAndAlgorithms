@@ -180,7 +180,7 @@ class SimplePrimeSieve(object):
                 p = num0 + psc[i]
                 if primeTest(p): yield p
             i0 = 0
-        # Note- can only reach here if p_max is and integer
+        # Note- can only reach here if p_max is an integer
         r2 = (p_max % cycle_len)
         num0 = p_max - r2
         i2 = bisect.bisect_right(psc, r2)
@@ -241,6 +241,8 @@ class SimplePrimeSieve(object):
         if not self.use_p_lst:
             return self.extendSieveNoPLst(n_max)
         #since = time.time()
+        if self.sieve_max is not None:
+            n_max = min(n_max, self.sieve_max)
         n_orig = len(self.sieve) - 1
         if n_orig >= n_max: return
         sieve = self.sieve
@@ -550,6 +552,183 @@ class SimplePrimeSieve(object):
         self.extendSieve(n)
         return bisect.bisect_right(self.p_lst, n)
 
+    def primeFactors(self, n: int) -> list[int]:
+        """
+        Gives the prime factors of a strictly positive integer
+        
+        Args:
+            Required positional:
+            n (int): The strictly positive integer of which the prime
+                    factors are to be found
+        
+        Returns:
+        List of ints, representing the complete set of prime factors
+        of n in strictly increasing order.
+        """
+        n_sqrt = isqrt(n)
+        if self.isPrime(n): return [n]
+        res = []
+        n2 = n
+        for p in self.primeGenerator(p_max=n_sqrt):
+            if p * p > n2: break
+            n3, r = divmod(n2, p)
+            if r: continue
+            n2 = n3
+            res.append(p)
+            n3, r = divmod(n2, p)
+            while not r:
+                n2 = n3
+                n3, r = divmod(n2, p)
+            if self.isPrime(n2): break
+        if n2 > 1: res.append(n2)
+        return res
+
+    def primeFactorisation(self, n: int) -> dict[int, int]:
+        """
+        Gives the prime factorisation of a strictly positive integer.
+        Note that by the Fundamental Theorem of Arithmetic this
+        factorisation is guaranteed to be unique.
+        
+        Args:
+            Required positional:
+            n (int): The strictly positive integer of which the prime
+                    factorisation is to be found.
+        
+        Returns:
+        Dictionary (dict) whose keys are the complete set of prime
+        factors of n (as ints) and whose values are the corresponding
+        power of that prime in the factorisation (also as ints).
+        """
+        n_sqrt = isqrt(n)
+        if self.isPrime(n): return {n: 1}
+        res = {}
+        n2 = n
+        for p in self.primeGenerator(p_max=n_sqrt):
+            if p * p > n2: break
+            n3, r = divmod(n2, p)
+            if r: continue
+            n2 = n3
+            res[p] = 1
+            n3, r = divmod(n2, p)
+            while not r:
+                res[p] += 1
+                n2 = n3
+                n3, r = divmod(n2, p)
+            if self.isPrime(n2): break
+        if n2 > 1: res[n2] = 1
+        return res
+    
+    def factorCount(self, n: int) -> int:
+        """
+        Gives the number of positive factors of a strictly positive
+        integer.
+        
+        Args:
+            Required positional:
+            n (int): The strictly positive integer for which the number
+                    of positive factors is to be calculated
+        
+        Returns:
+        Integer (int) giving the number of positive factors on n.
+        """
+        p_fact = self.primeFactorisation(n)
+        res = 1
+        for v in p_fact.values():
+            res *= v + 1
+        return res
+    
+    def factors(self, n: int) -> Set[int]:
+        """
+        Gives the complete set of positive factors of a strictly positive
+        integer.
+        
+        Args:
+            Required positional:
+            n (int): The strictly positive integer whose factors are to
+                    be found.
+        
+        Returns:
+        Set of ints, representing the complete set of positive factors
+        of n.
+        """
+        p_fact = self.primeFactorisation(n)
+        p_lst = list(p_fact.keys())
+        iter_lst = [[p ** x for x in range(p_fact[p] + 1)] for p in p_lst]
+        res = set()
+        for p_pow_tup in itertools.product(*iter_lst):
+            res.add(functools.reduce(lambda x, y: x * y, p_pow_tup, initial=1))
+        return res
+    
+    def factorisationsGenerator(
+        self,
+        n: int,
+        max_factor: Union[int, float]=float("inf"),
+        max_n_factors: Union[int, float]=float("inf"),
+        proper: bool=False,
+    ) -> Generator[Tuple[int], None, None]:
+        """
+        Generator yielding every factorisation of a strictly positive
+        integer into a product of integers greater than 1 subject to given
+        constraints.
+        
+        Args:
+            Required positional:
+            n (int): The strictly positive integer whose factorisation
+                    into integers greater than 1 is to be found.
+            
+            Optional named:
+            max_factor (int/float): If given, gives the largest factor
+                    that is allowed in any factorisation yielded.
+                Default: float("inf") (i.e. no restriction on the size
+                    of any factor in the factorisations yielded)
+            max_n_factors (int/float): If given, gives the largest
+                    number of factors (including multiplicity) allowed
+                    in any factorisation yielded.
+                Default: float("inf") (i.e. no restriction on the
+                    number of factors in the factorisations yielded)
+            proper (bool): Whether the factorisations yielded should
+                    all be proper (i.e. whether the trivial factorisation
+                    (n,) should be yielded, assuming it satisfies the
+                    other constraints).
+                Default: True
+        
+        Yields:
+        Tuple of ints giving each of the factorisations of n in turn.
+        In each factorisation, the factors comprising the factorisation
+        are ordered in increasing size, with repeated factors appearing
+        as many times as they are repeated in the factorisation.
+        """
+        if not max_n_factors: return
+        elif max_n_factors == 1:
+            if not proper and max_factor >= n:
+                yield (n,)
+            return
+        facts = self.factors(n)
+        facts -= {1, n}
+        facts = sorted(facts)
+        for fact in facts:
+            if fact > max_factor: break
+            n2 = n // fact
+            for facts2 in self.factorisationsGenerator(
+                n2,
+                max_factor=fact,
+                max_n_factors=max_n_factors - 1,
+                proper=False
+            ):
+                yield (*facts2, fact)
+        else:
+            if max_factor >= n and not proper:
+                yield (n,)
+        return
+
+    def eulerTotient(self, n: int) -> int:
+
+        res = 1
+        pf = self.primeFactorisation(n)
+        for p, f in pf.items():
+            res *= p ** (f - 1) * (p - 1)
+        return res
+
 class PrimeSPFsieve(SimplePrimeSieve):
     """
     Finds the smallest prime factor for each number and the number of times
@@ -714,7 +893,7 @@ class PrimeSPFsieve(SimplePrimeSieve):
         self.extendSieve(n)
         return self.sieve[n][0]
 
-    def primeFactors(self, n: int) -> List[int]:
+    def primeFactors(self, n: int) -> list[int]:
         """
         Gives the prime factors of a strictly positive integer
         
@@ -724,19 +903,37 @@ class PrimeSPFsieve(SimplePrimeSieve):
                     factors are to be found
         
         Returns:
-        Set of ints, representing the complete set of prime factors
-        of n.
+        List of ints, representing the complete set of prime factors
+        of n in strictly increasing order.
         """
+        #if n > 
+        #n_sqrt = isqrt(n)
+        if self.isPrime(n):
+            return [n]
         self.extendSieve(n)
-        sieve = self.sieve
-        #print(n, sieve)
         res = []
-        while n != 1:
-            res.append(sieve[n][0])
-            n = sieve[n][2]
+        n2 = n
+        if n2 >= len(self.sieve):
+            for p in self.primeGenerator(isqrt(n)):
+                n3, r = divmod(n2, p)
+                if r: continue
+                res.append(p)
+                n2 = n3
+                n3, r = divmod(n2, p)
+                while not r:
+                    n2 = n3
+                    n3, r = divmod(n2, p)
+                if n2 < len(self.sieve):
+                    break
+                elif self.isPrime(n2):
+                    res.append(n2)
+                    return res
+        while n2 != 1:
+            res.append(self.sieve[n2][0])
+            n2 = self.sieve[n2][2]
         return res
 
-    def primeFactorisation(self, n: int) -> Dict[int, int]:
+    def primeFactorisation(self, n: int) -> dict[int, int]:
         """
         Gives the prime factorisation of a strictly positive integer.
         Note that by the Fundamental Theorem of Arithmetic this
@@ -745,113 +942,37 @@ class PrimeSPFsieve(SimplePrimeSieve):
         Args:
             Required positional:
             n (int): The strictly positive integer of which the prime
-                    factorisatio is to be found.
+                    factorisation is to be found.
         
         Returns:
         Dictionary (dict) whose keys are the complete set of prime
         factors of n (as ints) and whose values are the corresponding
         power of that prime in the factorisation (also as ints).
         """
+        if self.isPrime(n):
+            return {n: 1}
         self.extendSieve(n)
-        sieve = self.sieve
         res = {}
-        while n != 1:
-            res[sieve[n][0]] = sieve[n][1]
-            n = sieve[n][2]
+        n2 = n
+        if n2 >= len(self.sieve):
+            for p in self.primeGenerator(isqrt(n)):
+                n3, r = divmod(n2, p)
+                if r: continue
+                res[p] = 1
+                n2 = n3
+                n3, r = divmod(n2, p)
+                while not r:
+                    n2 = n3
+                    n3, r = divmod(n2, p)
+                    res[p] += 1
+                if n2 < len(self.sieve):
+                    break
+                elif self.isPrime(n2):
+                    break
+        if n2 >= len(self.sieve):
+            res[n2] = 1
+            return res
+        while n2 != 1:
+            res[self.sieve[n2][0]] = self.sieve[n2][1]
+            n2 = self.sieve[n2][2]
         return res
-    
-    def factorCount(self, n: int) -> int:
-        """
-        Gives the number of positive factors of a strictly positive
-        integer.
-        
-        Args:
-            Required positional:
-            n (int): The strictly positive integer for which the number
-                    of positive factors is to be calculated
-        
-        Returns:
-        Integer (int) giving the number of positive factors on n.
-        """
-        p_fact = self.primeFactorisation(n)
-        res = 1
-        for v in p_fact.values():
-            res *= v + 1
-        return res
-    
-    def factors(self, n: int) -> Set[int]:
-        """
-        Gives the complete set of positive factors of a strictly positive
-        integer.
-        
-        Args:
-            Required positional:
-            n (int): The strictly positive integer whose factors are to
-                    be found.
-        
-        Returns:
-        Set of ints, representing the complete set of positive factors
-        of n.
-        """
-        p_fact = self.primeFactorisation(n)
-        p_lst = list(p_fact.keys())
-        iter_lst = [[p ** x for x in range(p_fact[p] + 1)] for p in p_lst]
-        res = set()
-        for p_pow_tup in itertools.product(*iter_lst):
-            res.add(functools.reduce(lambda x, y: x * y, p_pow_tup, initial=1))
-        return res
-    
-    def factorisationsGenerator(self, n: int,\
-            max_factor: Union[int, float]=float("inf"),\
-            max_n_factors: Union[int, float]=float("inf"),  proper: bool=False)\
-            -> Generator[Tuple[int], None, None]:
-        """
-        Generator yielding every factorisation of a strictly positive
-        integer into a product of integers greater than 1 subject to given
-        constraints.
-        
-        Args:
-            Required positional:
-            n (int): The strictly positive integer whose factorisation
-                    into integers greater than 1 is to be found.
-            
-            Optional named:
-            max_factor (int/float): If given, gives the largest factor
-                    that is allowed in any factorisation yielded.
-                Default: float("inf") (i.e. no restriction on the size
-                    of any factor in the factorisations yielded)
-            max_n_factors (int/float): If given, gives the largest
-                    number of factors (including multiplicity) allowed
-                    in any factorisation yielded.
-                Default: float("inf") (i.e. no restriction on the
-                    number of factors in the factorisations yielded)
-            proper (bool): Whether the factorisations yielded should
-                    all be proper (i.e. whether the trivial factorisation
-                    (n,) should be yielded, assuming it satisfies the
-                    other constraints).
-                Default: True
-        
-        Yields:
-        Tuple of ints giving each of the factorisations of n in turn.
-        In each factorisation, the factors comprising the factorisation
-        are ordered in increasing size, with repeated factors appearing
-        as many times as they are repeated in the factorisation.
-        """
-        if not max_n_factors: return
-        elif max_n_factors == 1:
-            if not proper and max_factor >= n:
-                yield (n,)
-            return
-        facts = self.factors(n)
-        facts -= {1, n}
-        facts = sorted(facts)
-        for fact in facts:
-            if fact > max_factor: break
-            n2 = n // fact
-            for facts2 in self.factorisationsGenerator(n2,\
-                    max_factor=fact, max_n_factors=max_n_factors - 1, proper=False):
-                yield (*facts2, fact)
-        else:
-            if max_factor >= n and not proper:
-                yield (n,)
-        return
