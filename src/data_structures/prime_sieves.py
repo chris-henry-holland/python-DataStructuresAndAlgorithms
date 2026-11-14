@@ -722,11 +722,54 @@ class SimplePrimeSieve(object):
         return
 
     def eulerTotient(self, n: int) -> int:
+        """
+        Calculates the value of the Euler totient function for
+        the strictly positive integer n.
 
+        The Euler totient function value for a strictly positive
+        integer n is defined to be the number of strictly positive
+        integers no less than n that are coprime with n (i.e. their
+        greatest common denominator is 1).
+
+        Args:
+            Required positional:
+            n (int): Strictly positive integer for which the
+                    Euler totient function value is to be
+                    calculated.
+
+        Returns:
+        Integer (int) giving the value of the Euler totient function
+        for n.
+        """
         res = 1
         pf = self.primeFactorisation(n)
         for p, f in pf.items():
             res *= p ** (f - 1) * (p - 1)
+        return res
+    
+    def sumOfDivisors(self, n: int) -> int:
+        """
+        Calculates the value of the sum of divisors function for
+        the strictly positive integer n.
+
+        The sum of divisors function value for a strictly positive
+        integer n is defined to be the sum of strictly positive
+        integers that exactly divide n (including n itself).
+
+        Args:
+            Required positional:
+            n (int): Strictly positive integer for which the
+                    sum of divisors function value is to be
+                    calculated.
+
+        Returns:
+        Integer (int) giving the value of the sum of divisors function
+        for n.
+        """
+        res = 1
+        pf = self.primeFactorisation(n)
+        for p, f in pf.items():
+            res *= (p ** (f + 1) - 1) // (p - 1)
         return res
 
 class PrimeSPFsieve(SimplePrimeSieve):
@@ -970,6 +1013,7 @@ class PrimeSPFsieve(SimplePrimeSieve):
                 elif self.isPrime(n2):
                     break
         if n2 >= len(self.sieve):
+            # Note- can only get here if n2 is prime
             res[n2] = 1
             return res
         while n2 != 1:
