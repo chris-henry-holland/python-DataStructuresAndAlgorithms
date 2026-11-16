@@ -433,10 +433,12 @@ class SimplePrimeSieve(object):
             if certain: return res0
         if extend_sieve:
             self.extendSieve(n)
+        if len(self.sieve) > n:
             return self._isPrimeFromSieve(n)
-        sqrt = isqrt(n)
-        if extend_sieve_sqrt:
-            self.extendSieve(sqrt)
+        n_sqrt = isqrt(n)
+        for p in self.primeGenerator(n_sqrt, sieve_extend_max=n_sqrt if extend_sieve_sqrt else 0):
+            if not n % p: return False
+        """
         if self.use_p_lst:
             for p in self.p_lst:
                 if p > sqrt: return True
@@ -447,11 +449,12 @@ class SimplePrimeSieve(object):
             for p in range(3, min(len(self.sieve), sqrt + 1), 2):
                 if self.sieve[p] and not n % p:
                     return False
-        p = len(self.sieve)
-        p += not p & 1
-        for p in range(p, sqrt + 1, 2):
-            if not n % p:
-                return False
+        """
+        #p = len(self.sieve)
+        #p += not p & 1
+        #for p in range(p, sqrt + 1, 2):
+        #    if not n % p:
+        #        return False
         return True
 
     def primeGenerator(
