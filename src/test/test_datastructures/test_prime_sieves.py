@@ -43,6 +43,7 @@ class TestSimplePrimeSieve(unittest.TestCase):
                 # Checking the initial part of the sieve equals the expected values
                 self.assertEqual(ps.sieve[:len(sieve_start)], sieve_start[:len(ps.sieve)], f"n_max = {init_params['kwargs'].get('n_max', None)}, sieve_max = {init_params['sieve_max']}")
 
+    
     def test_SimplePrimeSieve_isPrime_noerr(self):
         nonprime_cases = [
             1,
@@ -84,8 +85,10 @@ class TestSimplePrimeSieve(unittest.TestCase):
         #    *list(range(-11, 1)),
         #    math.pi,
         #]
+        sieve_test_max = 10 ** 18
         for init_params in [
-            {"kwargs": {}},
+            #{"kwargs": {}},
+            {"kwargs": {"sieve_max": 100}},
             {"kwargs": {"n_max": 10, "sieve_max": 20}},
             {"kwargs": {"n_max": 10, "sieve_max": 5}},
             {"kwargs": {"n_max": 20, "sieve_max": 10}},
@@ -101,29 +104,77 @@ class TestSimplePrimeSieve(unittest.TestCase):
                             it = range(1, 11) if use_miller_rabin_screening else [3]
                             for n_miller_rabin_trials in it:
                                 # Checking the method isPrime() returns False for non-primes
-                                for n in nonprime_cases:
-                                    if not use_miller_rabin_screening and n > 10 ** 16: continue
+                                for num in nonprime_cases:
+                                    if not use_miller_rabin_screening and num > sieve_test_max: continue
                                     ps = SimplePrimeSieve(**init_params["kwargs"])
-                                    print(f"ps.isPrime({n}, extend_sieve={extend_sieve}, extend_sieve_sqrt={extend_sieve_sqrt}, use_miller_rabin_screening={use_miller_rabin_screening}, n_miller_rabin_trials={n_miller_rabin_trials})")
+                                    #print(f"ps.isPrime({num}, extend_sieve={extend_sieve}, extend_sieve_sqrt={extend_sieve_sqrt}, use_miller_rabin_screening={use_miller_rabin_screening}, n_miller_rabin_trials={n_miller_rabin_trials})")
                                     
                                     ans = ps.isPrime(
-                                        n,
+                                        num,
                                         extend_sieve=extend_sieve,
                                         extend_sieve_sqrt=extend_sieve_sqrt,
                                         use_miller_rabin_screening=use_miller_rabin_screening,
                                         n_miller_rabin_trials=n_miller_rabin_trials
                                     )
-                                    self.assertFalse(ans, msg=f"ps.isPrime({n}, extend_sieve={extend_sieve}, extend_sieve_sqrt={extend_sieve_sqrt}, use_miller_rabin_screening={use_miller_rabin_screening}, n_miller_rabin_trials={n_miller_rabin_trials}) returned True even though {n} is not prime.")
+                                    self.assertFalse(ans, msg=f"ps.isPrime({num}, extend_sieve={extend_sieve}, extend_sieve_sqrt={extend_sieve_sqrt}, use_miller_rabin_screening={use_miller_rabin_screening}, n_miller_rabin_trials={n_miller_rabin_trials}) returned True even though {num} is not prime.")
                                 # Checking the method isPrime() returns True for primes
-                                for n in prime_cases:
-                                    if not use_miller_rabin_screening and n > 10 ** 16: continue
+                                for num in prime_cases:
+                                    if not use_miller_rabin_screening and num > sieve_test_max: continue
                                     ps = SimplePrimeSieve(**init_params["kwargs"])
-                                    print(f"ps.isPrime({n}, extend_sieve={extend_sieve}, extend_sieve_sqrt={extend_sieve_sqrt}, use_miller_rabin_screening={use_miller_rabin_screening}, n_miller_rabin_trials={n_miller_rabin_trials})")
+                                    #print(f"ps.isPrime({n}, extend_sieve={extend_sieve}, extend_sieve_sqrt={extend_sieve_sqrt}, use_miller_rabin_screening={use_miller_rabin_screening}, n_miller_rabin_trials={n_miller_rabin_trials})")
                                     ans = ps.isPrime(
-                                        n,
+                                        num,
                                         extend_sieve=extend_sieve,
                                         extend_sieve_sqrt=extend_sieve_sqrt,
                                         use_miller_rabin_screening=use_miller_rabin_screening,
                                         n_miller_rabin_trials=n_miller_rabin_trials,
                                     )
-                                    self.assertTrue(ans, msg=f"ps.isPrime({n}, extend_sieve={extend_sieve}, extend_sieve_sqrt={extend_sieve_sqrt}, use_miller_rabin_screening={use_miller_rabin_screening}, n_miller_rabin_trials={n_miller_rabin_trials}) returned False even though {n} is prime.")
+                                    self.assertTrue(ans, msg=f"ps.isPrime({num}, extend_sieve={extend_sieve}, extend_sieve_sqrt={extend_sieve_sqrt}, use_miller_rabin_screening={use_miller_rabin_screening}, n_miller_rabin_trials={n_miller_rabin_trials}) returned False even though {num} is prime.")
+    
+    def test_SimplePrimeSieve_primeFactorisation_noerr(self):
+        pf_cases = [
+            (1, {}),
+            (2, {2: 1}),
+            (3, {3: 1}),
+            (4, {2: 2}),
+            (5, {5: 1}),
+            (6, {2: 1, 3: 1}),
+            (7, {7: 1}),
+            (8, {2: 3}),
+            (9, {3: 2}),
+            (10, {2: 1, 5: 1}),
+            (11, {11: 1}),
+            (12, {2: 2, 3: 1}),
+            (15, {3: 1, 5: 1}),
+            (24, {2: 3, 3: 1}),
+            (36, {2: 2, 3: 2}),
+            (64, {2: 6}),
+            (100, {2: 2, 5: 2}),
+            (120, {2: 3, 3: 1, 5: 1}),
+            (243, {3: 5}),
+            (1024, {2: 10}),
+            (104729 * 104723, {104729: 1, 104723: 1}),
+            (1999966, {2: 1, 999983: 1}),
+            (10 ** 9 + 7, {10 ** 9 + 7: 1}),
+            ((1 << 61) - 1, {(1 << 61) - 1: 1}),
+        ]
+
+        #invalid_cases =[
+        #    *list(range(-11, 1)),
+        #    math.pi,
+        #]
+        sieve_test_max = 10 ** 18
+        for init_params in [
+            {"kwargs": {}},
+            {"kwargs": {"sieve_max": 3}},
+            {"kwargs": {"sieve_max": 100}},
+            {"kwargs": {"n_max": 10, "sieve_max": 20}},
+            {"kwargs": {"n_max": 10, "sieve_max": 5}},
+            {"kwargs": {"n_max": 20, "sieve_max": 10}},
+        ]:
+            init_params.setdefault("sieve_max", init_params["kwargs"].get("sieve_max", 10 ** 7))
+            for num, true_pf in pf_cases:
+                ps = SimplePrimeSieve(**init_params["kwargs"])
+                calc_pf = ps.primeFactorisation(num)
+                #print(num, calc_pf, true_pf, len(ps.sieve))
+                self.assertEqual(calc_pf, true_pf, msg=f"ps.primeFactorisation({num}) returned {calc_pf}, but the prime factorisation of {num} is {true_pf}.")
