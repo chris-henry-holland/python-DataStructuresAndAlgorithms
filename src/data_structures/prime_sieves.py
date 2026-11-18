@@ -557,16 +557,17 @@ class SimplePrimeSieve(object):
 
     def primeFactors(self, n: int) -> list[int]:
         """
-        Gives the prime factors of a strictly positive integer
+        Gives the ordered list of distinct prime factors of a
+        strictly positive integer.
         
         Args:
             Required positional:
-            n (int): The strictly positive integer of which the prime
-                    factors are to be found
+            n (int): The strictly positive integer of which the distinct
+                    prime factors are to be found.
         
         Returns:
-        List of ints, representing the complete set of prime factors
-        of n in strictly increasing order.
+        List of ints, the ordered list of prime factors of n in strictly
+        increasing order.
         """
         n_sqrt = isqrt(n)
         if self.isPrime(n): return [n]
@@ -640,7 +641,7 @@ class SimplePrimeSieve(object):
             res *= v + 1
         return res
     
-    def factors(self, n: int) -> Set[int]:
+    def factors(self, n: int) -> list[int]:
         """
         Gives the complete set of positive factors of a strictly positive
         integer.

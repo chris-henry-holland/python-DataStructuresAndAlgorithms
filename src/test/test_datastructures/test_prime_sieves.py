@@ -153,7 +153,9 @@ class TestSimplePrimeSieve(unittest.TestCase):
             (120, {2: 3, 3: 1, 5: 1}),
             (243, {3: 5}),
             (1024, {2: 10}),
-            (104729 * 104723, {104729: 1, 104723: 1}),
+            (2310, {2: 1, 3: 1, 5: 1, 7: 1, 11: 1}),
+            (104727, {3: 1, 7: 1, 4987: 1}),
+            (104729 * 104723, {104723: 1, 104729: 1}),
             (1999966, {2: 1, 999983: 1}),
             (10 ** 9 + 7, {10 ** 9 + 7: 1}),
             ((1 << 61) - 1, {(1 << 61) - 1: 1}),
@@ -163,7 +165,6 @@ class TestSimplePrimeSieve(unittest.TestCase):
         #    *list(range(-11, 1)),
         #    math.pi,
         #]
-        sieve_test_max = 10 ** 18
         for init_params in [
             {"kwargs": {}},
             {"kwargs": {"sieve_max": 3}},
@@ -178,3 +179,47 @@ class TestSimplePrimeSieve(unittest.TestCase):
                 calc_pf = ps.primeFactorisation(num)
                 #print(num, calc_pf, true_pf, len(ps.sieve))
                 self.assertEqual(calc_pf, true_pf, msg=f"ps.primeFactorisation({num}) returned {calc_pf}, but the prime factorisation of {num} is {true_pf}.")
+
+    def test_SimplePrimeSieve_primeFactors_noerr(self):
+        pf_cases = [
+            (1, []),
+            (2, [2]),
+            (3, [3]),
+            (4, [2]),
+            (5, [5]),
+            (6, [2, 3]),
+            (7, [7]),
+            (8, [2]),
+            (9, [3]),
+            (10, [2, 5]),
+            (11, [11]),
+            (12, [2, 3]),
+            (15, [3, 5]),
+            (24, [2, 3]),
+            (36, [2, 3]),
+            (64, [2]),
+            (100, [2, 5]),
+            (120, [2, 3, 5]),
+            (243, [3]),
+            (1024, [2]),
+            (2310, [2, 3, 5, 7, 11]),
+            (104727, [3, 7, 4987]),
+            (104729 * 104723, [104723, 104729]),
+            (1999966, [2, 999983]),
+            (10 ** 9 + 7, [10 ** 9 + 7]),
+            ((1 << 61) - 1, [(1 << 61) - 1]),
+        ]
+        for init_params in [
+            {"kwargs": {}},
+            {"kwargs": {"sieve_max": 3}},
+            {"kwargs": {"sieve_max": 100}},
+            {"kwargs": {"n_max": 10, "sieve_max": 20}},
+            {"kwargs": {"n_max": 10, "sieve_max": 5}},
+            {"kwargs": {"n_max": 20, "sieve_max": 10}},
+        ]:
+            init_params.setdefault("sieve_max", init_params["kwargs"].get("sieve_max", 10 ** 7))
+            for num, true_pfacts in pf_cases:
+                ps = SimplePrimeSieve(**init_params["kwargs"])
+                calc_pfacts = ps.primeFactors(num)
+                #print(num, calc_pf, true_pf, len(ps.sieve))
+                self.assertEqual(calc_pfacts, true_pfacts, msg=f"ps.primeFactors({num}) returned {calc_pfacts}, but the complete ordered list of the distinct prime factors of {num} is {true_pfacts}.")
