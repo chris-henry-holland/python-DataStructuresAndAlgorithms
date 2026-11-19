@@ -569,6 +569,10 @@ class SimplePrimeSieve(object):
         List of ints, the ordered list of prime factors of n in strictly
         increasing order.
         """
+        if not isinstance(n, int):
+            raise TypeError("n must be an integer")
+        if n <= 0:
+            raise ValueError("n must be a strictly positive integer")
         n_sqrt = isqrt(n)
         if self.isPrime(n): return [n]
         res = []
@@ -603,6 +607,10 @@ class SimplePrimeSieve(object):
         factors of n (as ints) and whose values are the corresponding
         power of that prime in the factorisation (also as ints).
         """
+        if not isinstance(n, int):
+            raise TypeError("n must be an integer")
+        if n <= 0:
+            raise ValueError("n must be a strictly positive integer")
         n_sqrt = isqrt(n)
         if self.isPrime(n): return {n: 1}
         res = {}
@@ -953,6 +961,10 @@ class PrimeSPFsieve(SimplePrimeSieve):
         List of ints, representing the complete set of prime factors
         of n in strictly increasing order.
         """
+        if not isinstance(n, int):
+            raise TypeError("n must be an integer")
+        if n <= 0:
+            raise ValueError("n must be a strictly positive integer")
         #if n > 
         #n_sqrt = isqrt(n)
         if self.isPrime(n):
@@ -996,6 +1008,10 @@ class PrimeSPFsieve(SimplePrimeSieve):
         factors of n (as ints) and whose values are the corresponding
         power of that prime in the factorisation (also as ints).
         """
+        if not isinstance(n, int):
+            raise TypeError("n must be an integer")
+        if n <= 0:
+            raise ValueError("n must be a strictly positive integer")
         if self.isPrime(n):
             return {n: 1}
         self.extendSieve(n)

@@ -180,6 +180,44 @@ class TestSimplePrimeSieve(unittest.TestCase):
                 #print(num, calc_pf, true_pf, len(ps.sieve))
                 self.assertEqual(calc_pf, true_pf, msg=f"ps.primeFactorisation({num}) returned {calc_pf}, but the prime factorisation of {num} is {true_pf}.")
 
+    def test_SimplePrimeSieve_primeFactorisation_err(self):
+        typeerr_cases = [
+            None,
+            "hello",
+            1.3,
+            0.,
+            1.,
+            math.pi,
+            float("inf"),
+            -float("inf"),
+        ]
+        valueerr_cases = [
+            *list(range(-10, 1)),
+            -3123686,
+        ]
+
+        #invalid_cases =[
+        #    *list(range(-11, 1)),
+        #    math.pi,
+        #]
+        for init_params in [
+            {"kwargs": {}},
+            {"kwargs": {"sieve_max": 3}},
+            {"kwargs": {"sieve_max": 100}},
+            {"kwargs": {"n_max": 10, "sieve_max": 20}},
+            {"kwargs": {"n_max": 10, "sieve_max": 5}},
+            {"kwargs": {"n_max": 20, "sieve_max": 10}},
+        ]:
+            init_params.setdefault("sieve_max", init_params["kwargs"].get("sieve_max", 10 ** 7))
+            ps = SimplePrimeSieve(**init_params["kwargs"])
+            for num in typeerr_cases:
+                with self.assertRaises(TypeError):
+                    ps.primeFactorisation(num)
+            for num in valueerr_cases:
+                with self.assertRaises(ValueError):
+                    ps.primeFactorisation(num)
+        return
+
     def test_SimplePrimeSieve_primeFactors_noerr(self):
         pf_cases = [
             (1, []),
