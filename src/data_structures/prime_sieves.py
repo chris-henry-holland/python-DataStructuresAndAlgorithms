@@ -275,12 +275,15 @@ class SimplePrimeSieve(object):
         return
 
     def extendSieveNoPLst(self, n_max: int):
+        # TODO- incorporate into extendSieve() using primeGenerator() (or similar)
+        if self.sieve_max is not None:
+            n_max = min(n_max, self.sieve_max)
         n_orig = len(self.sieve) - 1
         if n_orig >= n_max: return
         sieve = self.sieve
-        sieve.extend([True for x in range(n_orig + 1, n_max + 1)])
+        self._initialSieveExtension(n_max)
         for i in range(max(2, (n_orig >> 1) + 1), (n_max >> 1) + 1):
-            sieve[i << 1] = False
+            self._updateCompositeSieveEntry(i << 1, 2, i)
         for p in range(3, n_max + 1, 2):
             if p * p > n_max: break
             if not sieve[p]: continue
@@ -816,6 +819,8 @@ class PrimeSPFsieve(SimplePrimeSieve):
             self.p_lst = [2, 3]
 
     def _updateCompositeSieveEntry(self, num: int, spf: int, spf_complement: int) -> None:
+        if self.sieve[num][0] < spf:
+            return
         self.sieve[num] = (spf, self.sieve[spf_complement][1] + 1, self.sieve[spf_complement][2]) if self.sieve[spf_complement][0] == spf else (spf, 1, spf_complement)
         return
 
