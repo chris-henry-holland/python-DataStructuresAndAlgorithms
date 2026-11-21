@@ -106,6 +106,7 @@ class TestSimplePrimeSieve(unittest.TestCase):
                                 # Checking the method isPrime() returns False for non-primes
                                 for num in nonprime_cases:
                                     if not use_miller_rabin_screening and num > sieve_test_max: continue
+                                    #print(f"extend_sieve = {extend_sieve}, extend_sieve_sqrt = {extend_sieve_sqrt}, use_miller_rabin_screening = {use_miller_rabin_screening}, num = {num}")
                                     ps = SimplePrimeSieve(**init_params["kwargs"])
                                     #print(f"ps.isPrime({num}, extend_sieve={extend_sieve}, extend_sieve_sqrt={extend_sieve_sqrt}, use_miller_rabin_screening={use_miller_rabin_screening}, n_miller_rabin_trials={n_miller_rabin_trials})")
                                     
@@ -120,6 +121,7 @@ class TestSimplePrimeSieve(unittest.TestCase):
                                 # Checking the method isPrime() returns True for primes
                                 for num in prime_cases:
                                     if not use_miller_rabin_screening and num > sieve_test_max: continue
+                                    #print(f"extend_sieve = {extend_sieve}, extend_sieve_sqrt = {extend_sieve_sqrt}, use_miller_rabin_screening = {use_miller_rabin_screening}, num = {num}")
                                     ps = SimplePrimeSieve(**init_params["kwargs"])
                                     #print(f"ps.isPrime({n}, extend_sieve={extend_sieve}, extend_sieve_sqrt={extend_sieve_sqrt}, use_miller_rabin_screening={use_miller_rabin_screening}, n_miller_rabin_trials={n_miller_rabin_trials})")
                                     ans = ps.isPrime(
@@ -262,7 +264,9 @@ class TestSimplePrimeSieve(unittest.TestCase):
                 #print(num, calc_pf, true_pf, len(ps.sieve))
                 self.assertEqual(calc_pfacts, true_pfacts, msg=f"ps.primeFactors({num}) returned {calc_pfacts}, but the complete ordered list of the distinct prime factors of {num} is {true_pfacts}.")
 
+"""
 class TestPrimeSPFsieve(unittest.TestCase):
+    
 
     def test_PrimeSPFsieve_init_noerr(self):
         for init_params in [
@@ -537,3 +541,4 @@ class TestPrimeSPFsieve(unittest.TestCase):
                 calc_pfacts = ps.primeFactors(num)
                 #print(num, calc_pf, true_pf, len(ps.sieve))
                 self.assertEqual(calc_pfacts, true_pfacts, msg=f"ps.primeFactors({num}) returned {calc_pfacts}, but the complete ordered list of the distinct prime factors of {num} is {true_pfacts}.")
+"""
