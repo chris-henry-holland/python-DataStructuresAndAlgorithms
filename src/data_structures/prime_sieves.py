@@ -69,19 +69,64 @@ class SimplePrimeSieve(object):
         return self._prime_search_cycle_size_max
 
     @staticmethod
+    def _extendPrimeSearchCycleOneStepIfAllowed(
+        psc_curr: tuple[int, int, int, bool],
+        cycle_size_ub: Optional[int]=None,
+        cycle_len_ub: Optional[int]=None,
+    ) -> tuple[int, int, int, bool]:
+        if psc_curr[-1]: return psc_curr
+        p = psc_curr[0][1]
+        cycle_len0 = psc_curr[2]
+        cycle_len = cycle_len0 * p
+        if cycle_len_ub is not None and cycle_len > cycle_len_ub:
+            return (*psc_curr[:-1], True)
+        if cycle_size_ub is None:
+            cycle_size_ub = float("inf")
+        cycle_sz0 = len(psc_curr[0])
+        lst = []
+        j = 0
+        mult_nxt = p * psc_curr[0][j]
+        #cycle_diff, mult_nxt = divmod(p * p, cycle_len0)
+        #print(f"mult_nxt = {mult_nxt}")
+        #too_big = False
+        for num0 in range(0, cycle_len, cycle_len0):
+            for i in range(cycle_sz0):
+                if psc_curr[0][i] != mult_nxt:
+                    lst.append(psc_curr[0][i] + num0)
+                    if len(lst) > cycle_size_ub:
+                        return (*psc_curr[:-1], True)
+                    continue
+                j += 1
+                mult_nxt = (mult_nxt + p * (psc_curr[0][j] - psc_curr[0][j - 1])) if j < len(psc_curr[0]) else float("inf")
+                #print(f"mult_nxt = {mult_nxt}")
+            mult_nxt -= cycle_len0
+        res = (lst, [*psc_curr[1], p], cycle_len, False)
+        return res
+        
+
+    @staticmethod
     def _createPrimeSearchCycle(
         cycle_size_ub: int,
         cycle_len_ub: Optional[int]=None,
-    ) -> tuple[list[int], list[int], int]:
+    ) -> tuple[list[int], list[int], int, bool]:
         if cycle_len_ub is None:
             cycle_len_ub = float("inf")
         if cycle_len_ub < 1 or cycle_size_ub < 1:
-            return [[], [], 0]
+            return ([], [], 0, True)
         if cycle_len_ub == 1:
-            return [[0], [], 1]
+            return ([0], [], 1, True)
         if cycle_size_ub < 2 or cycle_len_ub < 6:
-            return [[1], [2], 2]
-        res = [[1, 5], [2, 3], 6]
+            return ([1], [2], 2, True)
+        res = ([1, 5], [2, 3], 6, False)
+
+        while not res[-1]:
+            res = SimplePrimeSieve._extendPrimeSearchCycleOneStepIfAllowed(
+                res,
+                cycle_size_ub=cycle_size_ub,
+                cycle_len_ub=cycle_len_ub,
+            )
+        return res
+        """
         #print(res)
         while True:
             p = res[0][1]
@@ -120,6 +165,7 @@ class SimplePrimeSieve(object):
             break
         return res
         """
+        """
         p_prod = 1
         p_lst = []
         for p in self.primeGenerator(p_max=None, sieve_extend_max=None):
@@ -151,7 +197,7 @@ class SimplePrimeSieve(object):
         p_max: Optional[int]=None,
     ) -> Generator[int, None, None]:
         if p_max < p_min: return
-        psc, p_lst, cycle_len = self.prime_search_cycle
+        psc, p_lst, cycle_len, _ = self.prime_search_cycle
         i = bisect.bisect_left(p_lst, p_min)
         for i in range(i, len(p_lst)):
             if p_lst[i] > p_max: return
@@ -244,6 +290,7 @@ class SimplePrimeSieve(object):
         #since = time.time()
         if self.sieve_max is not None:
             n_max = min(n_max, self.sieve_max)
+        print(f"n_max = {n_max}")
         n_orig = len(self.sieve) - 1
         if n_orig >= n_max: return
         #sieve = self.sieve
