@@ -180,7 +180,7 @@ class TestSimplePrimeSieve(unittest.TestCase):
                 ps = SimplePrimeSieve(**init_params["kwargs"])
                 calc_pf = ps.primeFactorisation(num)
                 #print(num, calc_pf, true_pf, len(ps.sieve))
-                self.assertEqual(calc_pf, true_pf, msg=f"ps.primeFactorisation({num}) returned {calc_pf}, but the prime factorisation of {num} is {true_pf}.")
+                self.assertEqual(calc_pf, true_pf, msg=f"ps.primeFactorisation({num}) for SimplePrimeSieve with arguments {init_params['kwargs']} returned {calc_pf}, but the prime factorisation of {num} is {true_pf}.")
 
     def test_SimplePrimeSieve_primeFactorisation_err(self):
         typeerr_cases = [
@@ -262,7 +262,7 @@ class TestSimplePrimeSieve(unittest.TestCase):
                 ps = SimplePrimeSieve(**init_params["kwargs"])
                 calc_pfacts = ps.primeFactors(num)
                 #print(num, calc_pf, true_pf, len(ps.sieve))
-                self.assertEqual(calc_pfacts, true_pfacts, msg=f"ps.primeFactors({num}) returned {calc_pfacts}, but the complete ordered list of the distinct prime factors of {num} is {true_pfacts}.")
+                self.assertEqual(calc_pfacts, true_pfacts, msg=f"ps.primeFactors({num}) for SimplePrimeSieve with arguments {init_params['kwargs']} returned {calc_pfacts}, but the complete ordered list of the distinct prime factors of {num} is {true_pfacts}.")
 
 """
 class TestPrimeSPFsieve(unittest.TestCase):
@@ -458,7 +458,7 @@ class TestPrimeSPFsieve(unittest.TestCase):
                 ps = PrimeSPFsieve(**init_params["kwargs"])
                 calc_pf = ps.primeFactorisation(num)
                 #print(num, calc_pf, true_pf, len(ps.sieve))
-                self.assertEqual(calc_pf, true_pf, msg=f"ps.primeFactorisation({num}) returned {calc_pf}, but the prime factorisation of {num} is {true_pf}.")
+                self.assertEqual(calc_pf, true_pf, msg=f"ps.primeFactorisation({num}) for PrimeSPFsieve with arguments {init_params['kwargs']} returned {calc_pf}, but the prime factorisation of {num} is {true_pf}.")
 
     def test_PrimeSPFsieve_primeFactorisation_err(self):
         typeerr_cases = [
@@ -540,5 +540,5 @@ class TestPrimeSPFsieve(unittest.TestCase):
                 ps = PrimeSPFsieve(**init_params["kwargs"])
                 calc_pfacts = ps.primeFactors(num)
                 #print(num, calc_pf, true_pf, len(ps.sieve))
-                self.assertEqual(calc_pfacts, true_pfacts, msg=f"ps.primeFactors({num}) returned {calc_pfacts}, but the complete ordered list of the distinct prime factors of {num} is {true_pfacts}.")
+                self.assertEqual(calc_pfacts, true_pfacts, msg=f"ps.primeFactors({num}) for PrimeSPFsieve with arguments {init_params['kwargs']} returned {calc_pfacts}, but the complete ordered list of the distinct prime factors of {num} is {true_pfacts}.")
 """

@@ -75,7 +75,7 @@ class SimplePrimeSieve(object):
         cycle_len_ub: Optional[int]=None,
     ) -> tuple[int, int, int, bool]:
         if psc_curr[-1]: return psc_curr
-        p = psc_curr[0][1]
+        p = psc_curr[0][1] if len(psc_curr[0]) > 1 else psc_curr[2] + 1
         cycle_len0 = psc_curr[2]
         cycle_len = cycle_len0 * p
         if cycle_len_ub is not None and cycle_len > cycle_len_ub:
@@ -182,6 +182,40 @@ class SimplePrimeSieve(object):
         return ([x for x in range(p_prod) if sieve[x]], p_lst, p_prod)
         """
     
+    def _updatePrimeSearchCycle(
+        self,
+        target: Optional[int],
+        cycle_size_ub: int,
+        cycle_len_ub: Optional[int]=None,
+    ) -> None:
+        #cycle_len_ub = target if cycle_len_ub is None else min(cycle_len_ub, target)
+        psc_curr = getattr(self, "_prime_search_cycle", ([1], [2], 2, False))
+        #print(f"initial psc = {psc_curr}")
+        changed = not hasattr(self, "_prime_search_cycle")
+        while not psc_curr[-1] and (target is None or psc_curr[2] < target):
+            psc_curr = self._extendPrimeSearchCycleOneStepIfAllowed(
+                psc_curr,
+                cycle_size_ub,
+                cycle_len_ub,
+            )
+            if not psc_curr[-1]: changed = True
+        if changed:
+            setattr(self, "_prime_search_cycle", psc_curr)
+            #print(f"updated psc = {psc_curr}")
+        return
+
+    def getPrimeSearchCycle(
+        self,
+        target: Optional[int]=None,
+    ) -> tuple[list[int], list[int], int, bool]:
+        self._updatePrimeSearchCycle(
+            target,
+            cycle_size_ub=self.prime_search_cycle_size_max,
+            cycle_len_ub=None,
+        )
+        return getattr(self, "_prime_search_cycle", None)
+
+    """
     @property
     def prime_search_cycle(self) -> tuple[list[int], list[int], int]:
         res = getattr(self, "_prime_search_cycle", None)
@@ -190,18 +224,32 @@ class SimplePrimeSieve(object):
             res = self._createPrimeSearchCycle(self.prime_search_cycle_size_max)
             setattr(self, "_prime_search_cycle", res)
         return res
-
+    """
     def _primeGeneratorUsingPrimeSearchCycle(
         self,
         p_min: int=0,
         p_max: Optional[int]=None,
     ) -> Generator[int, None, None]:
+        #print(f"calling _primeGeneratorUsingPrimeSearchCycle() with p_min = {p_min}, p_max = {p_max}")
         if p_max < p_min: return
-        psc, p_lst, cycle_len, _ = self.prime_search_cycle
+        psc, p_lst, cycle_len, _ = self.getPrimeSearchCycle(p_max)
+        #print(psc, p_lst, cycle_len)
+        p_lst_len_curr = len(p_lst)
         i = bisect.bisect_left(p_lst, p_min)
-        for i in range(i, len(p_lst)):
-            if p_lst[i] > p_max: return
+        for i in itertools.count(i):
+            if i >= len(p_lst): break
+            elif p_lst[i] > p_max: return
+            #print(f"yielding prime {p_lst[i]}")
             yield p_lst[i]
+            #print(f"resuming generator after yield of prime {p_lst[i]}")
+            # Guard against changes to prime search cycle between yields
+            if len(p_lst) != p_lst_len_curr:
+                yield from self._primeGeneratorUsingPrimeSearchCycle(p_lst[i] + 1, p_max)
+                return
+        #print(f"psc = {psc}, p_lst = {p_lst}, cycle_len = {cycle_len}")
+        #for i in range(i, len(p_lst)):
+        #    if p_lst[i] > p_max: return
+        #    yield p_lst[i]
         #if p_min < cycle_len:
         #    raise ValueError(
         #        "p_min must be no less than the prime search "
@@ -220,19 +268,36 @@ class SimplePrimeSieve(object):
         r = p_min % cycle_len
         num0 = p_min - r
         i0 = bisect.bisect_left(psc, r)
-        num0_it = itertools.count(num0, step=cycle_len) if p_max is None else range(num0, p_max - cycle_len, cycle_len)
+        #print(f"num0 = {num0}, i0 = {i0}, psc = {psc}")
+        num0_it = itertools.count(num0, step=cycle_len) if p_max is None else range(num0, p_max - cycle_len + 1, cycle_len)
         for num0 in num0_it:
             for i in range(i0, len(psc)):
                 p = num0 + psc[i]
-                if primeTest(p): yield p
+                #print(f"prime candidate = {p}")
+                if primeTest(p):
+                    #print(f"yielding prime {p}")
+                    yield p
+                    #print(f"resuming generator after yield of prime {p}")
+                    # Guard against changes to prime search cycle between yields
+                    if len(p_lst) != p_lst_len_curr:
+                        yield from self._primeGeneratorUsingPrimeSearchCycle(p + 1, p_max)
+                        return
             i0 = 0
         # Note- can only reach here if p_max is an integer
         r2 = (p_max % cycle_len)
         num0 = p_max - r2
         i2 = bisect.bisect_right(psc, r2)
+        #print(f"p_max = {p_max}, num0 = {num0}, i2 = {i2}, psc = {psc}")
         for i in range(i0, i2):
             p = num0 + psc[i]
-            if primeTest(p): yield p
+            if primeTest(p):
+                #print(f"yielding prime {p}")
+                yield p
+                #print(f"resuming generator after yield of prime {p}")
+                # Guard against changes to prime search cycle between yields
+                if len(p_lst) != p_lst_len_curr:
+                    yield from self._primeGeneratorUsingPrimeSearchCycle(p + 1, p_max)
+                    return
         return
 
     def initialiseSieve(self) -> None:
@@ -290,14 +355,18 @@ class SimplePrimeSieve(object):
         #since = time.time()
         if self.sieve_max is not None:
             n_max = min(n_max, self.sieve_max)
-        print(f"n_max = {n_max}")
+        #print(f"n_max = {n_max}")
         n_orig = len(self.sieve) - 1
         if n_orig >= n_max: return
         #sieve = self.sieve
         #p_lst = self.p_lst
         self._initialSieveExtension(n_max)
         p_max = min(isqrt(n_max), n_orig)
+        #print(f"self.sieve = {self.sieve}")
+        #print(f"self.p_lst = {self.p_lst}")
+        #print(f"n_orig = {n_orig}")
         for p in self.primeGenerator(p_max, sieve_extend_max=0):
+            #print(f"extend sieve p = {p}")
             #if p * p > n_max: break
             for i in range(max(p, (n_orig // p) + 1), (n_max // p) + 1):
                 num = p * i
@@ -315,10 +384,12 @@ class SimplePrimeSieve(object):
         # Using the fact that primes greater than 2 are 1 modulo 2
         start = n_orig + 1# + (n_orig & 1)
         end = isqrt(n_max)
+        #print(f"extendSieve() psc = {getattr(self, '_prime_search_cycle', None)}")
         #print(start, end)
         for p in self._primeGeneratorUsingPrimeSearchCycle(p_min=start, p_max=end):
             incorporatePrime(p)
         if not self.use_p_lst: return
+        #print("adding new primes to self.p_lst")
         for p in self._primeGeneratorUsingPrimeSearchCycle(p_min=end + 1, p_max=n_max):
             if self.sieve[p]: self.p_lst.append(p)
             
@@ -567,7 +638,9 @@ class SimplePrimeSieve(object):
         sieve_extend_max = min(sieve_extend_max, p_max2)
 
         n_mx = min(sieve_extend_max, (10 ** (largestLEpowN(len(self.sieve) - 1, base=10) + 1)))
-        
+        #print(self.p_lst)
+        #print(self.sieve)
+        #print(getattr(self, "_prime_search_cycle", None))
         if self.use_p_lst:
             if p_max is None:
                 for i, p in enumerate(self.p_lst):
@@ -581,19 +654,25 @@ class SimplePrimeSieve(object):
         else:
             for p in self._primeGeneratorUsingPrimeSearchCycle(0, len(self.sieve) - 1):
                 if self._isPrimeFromSieve(p): yield p
+            #print(self._prime_search_cycle)
             #yield 2
             #for p in range(3, min(p_max2, len(self.sieve)), 2):
             #    if self._isPrimeFromSieve(p):
             #        yield p
-
+        #print("hi1")
+        #print(f"i = {i}")
         #n_mx = 10 ** (math.ceil(math.log(len(self.sieve) - 1, 10)) + 1)
         while True:
             self.extendSieve(n_mx)
+            #print(f"p_lst = {self.p_lst}")
             for i in range(i + 1, len(self.p_lst)):
                 yield self.p_lst[i]
             if n_mx >= sieve_extend_max: break
             n_mx = min(n_mx * 10, sieve_extend_max)
+        #print("hi2")
+        #print(f"n_mx = {n_mx}")
         yield from self._primeGeneratorUsingPrimeSearchCycle(p_min=n_mx + 1, p_max=p_max)
+        #print(self._prime_search_cycle)
         return
         
     
@@ -680,6 +759,7 @@ class SimplePrimeSieve(object):
         res = {}
         n2 = n
         for p in self.primeGenerator(p_max=n_sqrt):
+            #print(f"yielded p = {p}")
             if p * p > n2: break
             n3, r = divmod(n2, p)
             if r: continue
