@@ -232,7 +232,7 @@ class SimplePrimeSieve(object):
     ) -> Generator[int, None, None]:
         #print(f"calling _primeGeneratorUsingPrimeSearchCycle() with p_min = {p_min}, p_max = {p_max}")
         if p_max < p_min: return
-        psc, p_lst, cycle_len, _ = self.getPrimeSearchCycle(p_max)
+        psc, p_lst, cycle_len, _ = self.getPrimeSearchCycle(isqrt(p_max))
         #print(psc, p_lst, cycle_len)
         p_lst_len_curr = len(p_lst)
         i = bisect.bisect_left(p_lst, p_min)
