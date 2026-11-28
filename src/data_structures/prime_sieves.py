@@ -390,7 +390,7 @@ class SimplePrimeSieve(object):
             incorporatePrime(p)
         if not self.use_p_lst: return
         #print("adding new primes to self.p_lst")
-        for p in self._primeGeneratorUsingPrimeSearchCycle(p_min=end + 1, p_max=n_max):
+        for p in self._primeGeneratorUsingPrimeSearchCycle(p_min=max(n_orig, end) + 1, p_max=n_max):
             if self.sieve[p]: self.p_lst.append(p)
             
 
